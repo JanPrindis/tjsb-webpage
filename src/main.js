@@ -32,7 +32,7 @@ function findActiveMatch(matches) {
     for (const match of matches) {
         const matchDate = new Date(`${match.date}T${match.time}:00`);
         if (matchDate > now) return match;
-        if ((now - matchDate) / (1000 * 60 * 60 * 24) < 4) return match;
+        if ((now - matchDate) / (1000 * 60 * 60 * 24) < SWITCH_DAY) return match;
     }
     return null;
 }

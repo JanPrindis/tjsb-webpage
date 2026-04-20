@@ -353,6 +353,11 @@ body {
     box-shadow: 0 4px 15px rgba(255, 244, 0, 0.05);
 }
 
+/* If played row is still active, make it opaque */
+.played-row.active-row {
+    opacity: 1 !important;
+}
+
 .s-score-badge.is-live {
     color: #ffffff;
     background: #ff2a2a;
