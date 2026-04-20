@@ -1,13 +1,60 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>tjsb-webpage</title>
-  </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.js"></script>
-  </body>
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8"/>
+    <link rel="icon" type="image/svg+xml" href="/Logo_100.svg"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Sokol Bohuňovice | 100 LET</title>
+    <link rel="stylesheet" href="/src/style.css">
+</head>
+<body>
+
+<header class="hero">
+    <div class="hero-overlay"></div>
+
+    <div class="hero-top">
+        <img src="/Logo_100.svg" alt="Sokol" class="main-logo">
+        <div class="social-links" id="header-socials">
+            <span class="social-text">SLEDUJ NÁS:</span>
+            <a href="https://www.instagram.com/bohunovice_fotbal/" target="_blank" class="social-icon"
+               title="Instagram">
+                <img src="/ig.svg" alt="IG">
+            </a>
+            <a href="https://www.facebook.com/TjSokolBohunovice" target="_blank" class="social-icon" title="Facebook">
+                <img src="/fb.svg" alt="FB">
+            </a>
+            <a href="https://www.tjsokolbohunovice.cz/" target="_blank" class="social-icon" title="Web">
+                <img src="/web.svg" alt="WEB">
+            </a>
+        </div>
+    </div>
+
+    <div id="active-match-container" class="active-match-wrapper">
+        <div class="loader">Načítám...</div>
+    </div>
+</header>
+
+<main class="content">
+    <div class="section-title">ROZPIS ZÁPASŮ</div>
+    <div id="schedule-container" class="schedule-list"></div>
+</main>
+
+<footer class="site-footer">
+    <div class="footer-content">
+        <span class="copyright">&copy; <span id="current-year"></span> Sokol Bohuňovice</span>
+        <span class="separator">•</span>
+        <span class="author">Designed by <strong>Jan Přindiš</strong></span>
+        <span class="separator">•</span>
+        <span class="author-links">
+      <a href="mailto:jan.prindis3@gmail.com" title="Napiš mi">Email</a>
+      <span class="link-sep">|</span>
+      <a href="https://github.com/JanPrindis/" target="_blank" title="GitHub">GitHub</a>
+      <span class="link-sep">|</span>
+      <a href="https://www.instagram.com/jan_prindis" target="_blank" title="Instagram">IG</a>
+    </span>
+    </div>
+</footer>
+
+<script type="module" src="/src/main.js"></script>
+</body>
 </html>
