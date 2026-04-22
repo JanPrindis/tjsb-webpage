@@ -194,12 +194,22 @@ function formatDateShort(dateObj) {
     return dateObj.toLocaleDateString('cs-CZ', {day: 'numeric', month: 'numeric'});
 }
 
+let isScrolling = false;
+
 window.addEventListener('scroll', () => {
-    const progress = Math.min(window.scrollY / (window.innerHeight * 0.4), 1);
-    document.documentElement.style.setProperty('--scroll', progress);
-    if (progress > 0.8) document.body.classList.add('scrolled-deep');
-    else document.body.classList.remove('scrolled-deep');
-});
+    if (!isScrolling) {
+        window.requestAnimationFrame(() => {
+            const progress = Math.min(window.scrollY / (window.innerHeight * 0.4), 1);
+            document.documentElement.style.setProperty('--scroll', progress);
+            
+            if (progress > 0.8) document.body.classList.add('scrolled-deep');
+            else document.body.classList.remove('scrolled-deep');
+            
+            isScrolling = false;
+        });
+        isScrolling = true;
+    }
+}, { passive: true });
 
 function runDebugMode(matches) {
     console.log("🛠️ DEBUG MODE START...");
