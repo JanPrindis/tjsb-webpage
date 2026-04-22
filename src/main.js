@@ -1,4 +1,6 @@
-const SWITCH_DAY = 4;
+const DAYS_BEFORE_NEXT_MATCH = 3.5;
+const MIN_RESULT_HOURS = 24;
+const END_OF_SEASON_DAYS = 7;
 let heroInterval = null;
 
 async function initHypeSite() {
@@ -16,8 +18,16 @@ async function initHypeSite() {
         // -------------------------
 
         const activeMatch = findActiveMatch(matches);
-        if (activeMatch) renderHeroMatch(activeMatch);
-        else document.getElementById('active-match-container').innerHTML = '<h2 style="color:white;">Sezóna skončila!</h2>';
+        if (activeMatch) {
+            renderHeroMatch(activeMatch);
+        } else {
+            document.getElementById('active-match-container').innerHTML = `
+                <div class="season-end-wrapper">
+                    <div class="state-label">Těšíme se na vás příští sezónu</div>
+                    <div class="huge-text">SEZÓNA SKONČILA!</div>
+                </div>
+            `;
+        }
 
         renderSchedule(matches, activeMatch);
         document.getElementById('current-year').textContent = new Date().getFullYear();
@@ -29,11 +39,57 @@ async function initHypeSite() {
 
 function findActiveMatch(matches) {
     const now = new Date();
-    for (const match of matches) {
-        const matchDate = new Date(`${match.date}T${match.time}:00`);
-        if (matchDate > now) return match;
-        if ((now - matchDate) / (1000 * 60 * 60 * 24) < SWITCH_DAY) return match;
+    let prevMatch = null;
+    let nextMatch = null;
+
+    // Get last and upcoming match
+    for (let i = 0; i < matches.length; i++) {
+        const matchDate = new Date(`${matches[i].date}T${matches[i].time}:00`);
+        if (matchDate > now) {
+            nextMatch = matches[i];
+            if (i > 0) {
+                prevMatch = matches[i - 1];
+            }
+            break;
+        }
     }
+
+    // If end of season
+    if (!nextMatch && matches.length > 0) {
+        prevMatch = matches[matches.length - 1];
+    }
+
+    if (prevMatch) {
+        const prevMatchDate = new Date(`${prevMatch.date}T${prevMatch.time}:00`);
+        const hoursSincePrev = (now - prevMatchDate) / (1000 * 60 * 60);
+
+        // Result has to be visible for at least 24 hours
+        if (hoursSincePrev < MIN_RESULT_HOURS) {
+            return prevMatch;
+        }
+
+        // End of season mode
+        if (!nextMatch) {
+            if (hoursSincePrev < END_OF_SEASON_DAYS * 24) {
+                return prevMatch;
+            }
+            return null;
+        }
+    }
+
+    // Minimal result time has been satisfied
+    if (nextMatch) {
+        const nextMatchDate = new Date(`${nextMatch.date}T${nextMatch.time}:00`);
+        const daysUntilNext = (nextMatchDate - now) / (1000 * 60 * 60 * 24);
+
+        // Check how long until next match
+        if (daysUntilNext <= DAYS_BEFORE_NEXT_MATCH) {
+            return nextMatch;
+        } else {
+            return prevMatch ? prevMatch : nextMatch;
+        }
+    }
+
     return null;
 }
 
@@ -148,8 +204,8 @@ window.addEventListener('scroll', () => {
 function runDebugMode(matches) {
     console.log("🛠️ DEBUG MODE START...");
     let currentIndex = 0;
-    let currentState = 0; // 0 = Upcoming, 1 = Live, 2 = Played
-    const states = ['Countdown', 'LIVE', 'Result'];
+    let currentState = 0; // 0 = Upcoming, 1 = Live, 2 = Played, 3 = End of season
+    const states = ['Countdown', 'LIVE', 'Result', 'End of season'];
 
     // Clear original active-match-container just to be safe
     document.getElementById('active-match-container').innerHTML = '';
@@ -182,17 +238,29 @@ function runDebugMode(matches) {
             fakeMatch.awayScore = fakeMatch.awayScore !== null ? fakeMatch.awayScore : Math.floor(Math.random() * 5);
         }
 
-        // Modify match data
-        const fakeMatches = [...matches];
-        fakeMatches[currentIndex] = fakeMatch;
+        if (currentState === 3) {
+            // END OF SEASON
+            if (heroInterval) clearInterval(heroInterval);
+            document.getElementById('active-match-container').innerHTML = `
+                <div class="season-end-wrapper">
+                    <div class="state-label">Těšíme se na vás příští sezónu</div>
+                    <div class="huge-text">SEZÓNA SKONČILA!</div>
+                </div>
+            `;
+            renderSchedule(matches, null);
+        } else {
+            // Modify match data
+            const fakeMatches = [...matches];
+            fakeMatches[currentIndex] = fakeMatch;
 
-        // Draw
-        renderHeroMatch(fakeMatch);
-        renderSchedule(fakeMatches, fakeMatch);
+            // Draw
+            renderHeroMatch(fakeMatch);
+            renderSchedule(fakeMatches, fakeMatch);
+        }
 
         // Move next step
         currentState++;
-        if (currentState > 2) {
+        if (currentState > 3) {
             currentState = 0;
             currentIndex++;
             if (currentIndex >= matches.length) {
