@@ -236,8 +236,8 @@
     "awayTeam": "FK Šumperk \"B\"",
     "homeLogo": "/Logo_100.svg",
     "awayLogo": "/logos/sumperk.png",
-    "homeScore": null,
-    "awayScore": null
+    "homeScore": 2,
+    "awayScore": 0
   },
   {
     "id": 21,
