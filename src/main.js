@@ -1,9 +1,15 @@
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+gsap.registerPlugin(ScrollTrigger);
+ScrollTrigger.config({ignoreMobileResize: true});
+
 const DAYS_BEFORE_NEXT_MATCH = 3.5;
 const MIN_RESULT_HOURS = 24;
 const END_OF_SEASON_DAYS = 7;
 let heroInterval = null;
 
-async function initHypeSite() {
+async function initData() {
     try {
         const response = await fetch('/data.json');
         const matches = await response.json();
@@ -194,22 +200,67 @@ function formatDateShort(dateObj) {
     return dateObj.toLocaleDateString('cs-CZ', {day: 'numeric', month: 'numeric'});
 }
 
-let isScrolling = false;
+// --- VIEWPORT LOCKING LOGIC ---
+let lockedVH = window.innerHeight;
+let lastWidth = window.innerWidth;
 
-window.addEventListener('scroll', () => {
-    if (!isScrolling) {
-        window.requestAnimationFrame(() => {
-            const progress = Math.min(window.scrollY / (window.innerHeight * 0.4), 1);
-            document.documentElement.style.setProperty('--scroll', progress);
-            
-            if (progress > 0.8) document.body.classList.add('scrolled-deep');
-            else document.body.classList.remove('scrolled-deep');
-            
-            isScrolling = false;
-        });
-        isScrolling = true;
+function setViewportHeight() {
+    lockedVH = window.innerHeight;
+    // CSS variable representing 1% of the locked viewport height
+    document.documentElement.style.setProperty('--vh', `${lockedVH * 0.01}px`);
+}
+
+// Run once on initial load
+setViewportHeight();
+
+// Only recalculate if the device is rotated (horizontal resize)
+window.addEventListener('resize', () => {
+    if (Math.abs(window.innerWidth - lastWidth) > 20) {
+        lastWidth = window.innerWidth;
+        setViewportHeight();
+        ScrollTrigger.refresh(); // Tell GSAP to update if orientation changes
     }
-}, { passive: true });
+});
+
+function initScrollAnimation() {
+    const tl = gsap.timeline({
+        scrollTrigger: {
+            start: 0,
+            // Use lockedVH instead of window.innerHeight
+            end: () => lockedVH * 0.4,
+            scrub: 0.2,
+            invalidateOnRefresh: true,
+            onUpdate: (self) => {
+                if (self.progress > 0.8) {
+                    document.body.classList.add('scrolled-deep');
+                } else {
+                    document.body.classList.remove('scrolled-deep');
+                }
+            }
+        }
+    });
+
+    // Hero collapse, card scale & move
+    tl.fromTo(document.documentElement,
+        { "--scroll": 0 },
+        {
+            "--scroll": 1,
+            ease: "none"
+        },
+        0
+    );
+
+    // The Result List Translation
+    tl.fromTo(".content",
+        { y: 0 },
+        {
+            y: () => -(lockedVH * 0.25),
+            ease: "none"
+        },
+        0
+    );
+}
+
 
 function runDebugMode(matches) {
     console.log("🛠️ DEBUG MODE START...");
@@ -280,4 +331,6 @@ function runDebugMode(matches) {
     }, 500);
 }
 
-initHypeSite();
+// Initialize animations and data
+initScrollAnimation();
+initData().catch(error => console.log(error));
