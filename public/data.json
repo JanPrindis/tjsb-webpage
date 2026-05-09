@@ -248,8 +248,8 @@
     "awayTeam": "Sokol Bohuňovice",
     "homeLogo": "/logos/chvalkovice.png",
     "awayLogo": "/Logo_100.svg",
-    "homeScore": null,
-    "awayScore": null
+    "homeScore": 1,
+    "awayScore": 1
   },
   {
     "id": 22,
