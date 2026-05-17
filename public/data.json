@@ -260,8 +260,8 @@
     "awayTeam": "Sokol Troubelice",
     "homeLogo": "/Logo_100.svg",
     "awayLogo": "/logos/troubelice.png",
-    "homeScore": null,
-    "awayScore": null
+    "homeScore": 3,
+    "awayScore": 0
   },
   {
     "id": 23,
