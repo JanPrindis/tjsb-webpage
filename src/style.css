@@ -535,6 +535,53 @@ body.scrolled-deep #header-socials {
     pointer-events: none;
 }
 
+/* =========================================
+   SCROLL INDICATOR
+   ========================================= */
+.scroll-indicator-wrapper {
+    position: absolute;
+    bottom: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    /* Fade on scroll */
+    opacity: clamp(0, 1 - var(--scroll) * 5, 1);
+}
+
+.scroll-indicator {
+    width: 26px;
+    height: 26px;
+    border-bottom: 4px solid var(--white);
+    border-right: 4px solid var(--white);
+    transform: rotate(45deg);
+    animation: scrollBounce 1.5s infinite;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+    margin-top: -12px;
+}
+
+/* Staggers the animation of the bottom arrow slightly */
+.scroll-indicator:nth-child(2) {
+    animation-delay: 0.15s;
+}
+
+@keyframes scrollBounce {
+    0% {
+        transform: translateY(-10px) rotate(45deg);
+        opacity: 0;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(10px) rotate(45deg);
+        opacity: 0;
+    }
+}
 
 /* =========================================
    PHONES | NARROW SCREENS (<768px width)
@@ -799,6 +846,10 @@ body.scrolled-deep #header-socials {
     }
 
     .match-meta, .state-label {
+        display: none;
+    }
+
+    .scroll-indicator-wrapper {
         display: none;
     }
 }

@@ -334,3 +334,14 @@ function runDebugMode(matches) {
 // Initialize animations and data
 initScrollAnimation();
 initData().catch(error => console.log(error));
+
+// Clickable scroll cue
+const scrollIndicator = document.querySelector('.scroll-indicator-wrapper');
+if (scrollIndicator) {
+    scrollIndicator.addEventListener('click', () => {
+        window.scrollTo({
+            top: lockedVH * 0.7,
+            behavior: 'smooth'
+        });
+    });
+}
