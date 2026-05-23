@@ -272,8 +272,8 @@
     "awayTeam": "Sokol Bohuňovice",
     "homeLogo": "/logos/bludov.png",
     "awayLogo": "/Logo_100.svg",
-    "homeScore": null,
-    "awayScore": null
+    "homeScore": 2,
+    "awayScore": 1
   },
   {
     "id": 24,
