@@ -284,8 +284,8 @@
     "awayTeam": "FK ŠTERNBERK \"B\"",
     "homeLogo": "/Logo_100.svg",
     "awayLogo": "/logos/sternberk.png",
-    "homeScore": null,
-    "awayScore": null
+    "homeScore": 3,
+    "awayScore": 0
   },
   {
     "id": 25,
