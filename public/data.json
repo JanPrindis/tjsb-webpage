@@ -296,8 +296,8 @@
     "awayTeam": "Sokol Bohuňovice",
     "homeLogo": "/logos/slavonin.png",
     "awayLogo": "/Logo_100.svg",
-    "homeScore": null,
-    "awayScore": null
+    "homeScore": 4,
+    "awayScore": 0
   },
   {
     "id": 26,
