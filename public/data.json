@@ -308,7 +308,7 @@
     "awayTeam": "1.FC Olešnice",
     "homeLogo": "/Logo_100.svg",
     "awayLogo": "/logos/olesnice.png",
-    "homeScore": null,
-    "awayScore": null
+    "homeScore": 5,
+    "awayScore": 1
   }
 ]
