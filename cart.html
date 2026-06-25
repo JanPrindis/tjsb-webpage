@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tvůj košík | TJ Sokol Bohuňovice</title>
+  <link rel="stylesheet" href="/src/style.css">
+  <link rel="stylesheet" href="/src/eshop.css">
+</head>
+<body class="eshop-body">
+
+<header class="eshop-header">
+  <div class="header-container">
+    <div class="header-left">
+      <a href="/eshop.html" class="back-home-link">← Pokračovat v nákupu</a>
+    </div>
+    <div class="header-center">
+      <a href="/eshop.html">
+        <img src="/Logo_100.svg" alt="Sokol Bohuňovice" class="header-logo">
+      </a>
+    </div>
+    <div class="header-right">
+      <div class="cart-btn active">
+        🛒 Košík (<span id="cart-count">0</span>)
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="eshop-main">
+  <h1 class="eshop-title">Tvůj košík</h1>
+
+  <div class="cart-wrapper">
+    <div id="cart-table-container"></div>
+
+    <form id="checkout-form" class="checkout-box" style="display: none;">
+      <h2>Údaje pro rezervaci</h2>
+      <p class="form-info-text">Zboží neposíláme poštou. Rezervaci si vyzvedneš osobně u pípy na hřišti.</p>
+
+      <div class="form-group">
+        <label for="cust-name">Jméno a příjmení *</label>
+        <input type="text" id="cust-name" class="eshop-input" required placeholder="Jarda Jágr">
+      </div>
+
+      <div class="form-group">
+        <label for="cust-email">E-mail *</label>
+        <input type="email" id="cust-email" class="eshop-input" required placeholder="jarda@sokol.cz">
+      </div>
+
+      <div class="form-group">
+        <label for="cust-phone">Telefonní číslo *</label>
+        <input type="tel" id="cust-phone" class="eshop-input" required placeholder="+420 123 456 789">
+      </div>
+
+      <div style="opacity: 0; position: absolute; top: 0; left: -9999px; z-index: -1;">
+        <label for="website-url">Webová stránka (Nevyplňovat)</label>
+        <input type="text" id="website-url" name="website" tabindex="-1" autocomplete="off">
+      </div>
+
+      <div class="form-group legal-checkbox-group" style="margin: 1.5rem 0; display: flex; align-items: flex-start; gap: 0.5rem;">
+        <input type="checkbox" id="legal-agreement" style="margin-top: 0.25rem; width: 18px; height: 18px; cursor: pointer;">
+        <label id="legal-label" for="legal-agreement" style="font-size: 0.9rem; color: rgba(255,255,255,0.8); cursor: pointer; user-select: none; line-height: 1.4;">
+          Souhlasím se <a href="/gdpr.html" target="_blank" style="color: var(--yellow, #ffd700); text-decoration: underline; font-weight: bold;">zpracováním osobních údajů</a> pro účely vyřízení této rezervace.
+        </label>
+      </div>
+
+      <button type="submit" class="btn-action-success">Odeslat rezervaci</button>
+    </form>
+  </div>
+</main>
+
+<script type="module" src="/src/cart.js"></script>
+
+<footer class="site-footer">
+  <div class="footer-content">
+    <span class="copyright">&copy; <span id="current-year"></span> Sokol Bohuňovice</span>
+    <span class="separator">•</span>
+    <span class="author">Designed by <strong>Jan Přindiš</strong></span>
+    <span class="separator">•</span>
+    <span class="author-links">
+      <a href="mailto:jan.prindis3@gmail.com" title="Napiš mi">Email</a>
+      <span class="link-sep">|</span>
+      <a href="https://github.com/JanPrindis/" target="_blank" title="GitHub">GitHub</a>
+      <span class="link-sep">|</span>
+      <a href="https://www.instagram.com/jan_prindis" target="_blank" title="Instagram">IG</a>
+    </span>
+  </div>
+</footer>
+</body>
+</html>

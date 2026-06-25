@@ -1,0 +1,15 @@
+name = "tjsb-webpage"
+main = "backend/worker.js"
+compatibility_date = "2024-05-01"
+
+[assets]
+directory = "dist"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "tjsb_eshop"
+database_id = "5f0c7ff3-45c6-4195-8049-e9151135cfaf"
+
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "tjsb-eshop"
