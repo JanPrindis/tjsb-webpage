@@ -64,15 +64,19 @@ app.post('/api/orders', async (c) => {
     }
 
     // Check if products exist
-    const uniqueProductIds = [...new Set(items.map(i => i.id))]
-    const placeholders = uniqueProductIds.map(() => '?').join(',')
+    const productIds = [...new Set(items.map(i => i.id))];
+    const placeholders = productIds.map(() => '?').join(',');
 
-    const existing = await c.env.DB.prepare(
-        `SELECT id FROM products WHERE id IN (${placeholders})`
-    ).bind(...uniqueProductIds).all()
+    const { results: dbProducts } = await c.env.DB.prepare(
+        `SELECT id, name, price FROM products WHERE id IN (${placeholders})`
+    ).bind(...productIds).all();
 
-    if (existing.results.length !== uniqueProductIds.length) {
-        return c.json({ error: 'Některé produkty jsme nenašli, zkontrolujte objednávku' }, 400)
+    // Create a map for easy lookup
+    const productMap = new Map(dbProducts.map(p => [p.id, p]));
+
+    // Verify all products were found
+    if (productMap.size !== productIds.length) {
+        return c.json({ error: 'Některé produkty v košíku již neexistují. Zkuste prosím obnovit stránku.' }, 400);
     }
 
     // Generate cancellation token
@@ -85,11 +89,12 @@ app.post('/api/orders', async (c) => {
 
     const orderId = orderResult.meta.last_row_id
 
-    const stmts = items.map(item =>
-        c.env.DB.prepare(
+    const stmts = items.map(item => {
+        const dbProduct = productMap.get(item.id); // Get the trusted product data
+        return c.env.DB.prepare(
             'INSERT INTO order_items (order_id, product_id, product_name, size, quantity, price) VALUES (?, ?, ?, ?, ?, ?)'
-        ).bind(orderId, item.id, item.name, item.size || null, item.quantity, item.price)
-    )
+        ).bind(orderId, item.id, dbProduct.name, item.size || null, item.quantity, dbProduct.price); // Use dbProduct.name and dbProduct.price
+    });
 
     await c.env.DB.batch(stmts)
 
@@ -100,6 +105,15 @@ app.post('/api/orders', async (c) => {
         console.log(`[EMAIL LINK] E-mails are disabled. Cancel link for order: \n${cancelLink}`);
     }
 
+    const verifiedItems = items.map(cartItem => {
+        const dbProduct = productMap.get(cartItem.id);
+        return {
+            ...cartItem,
+            name: dbProduct.name,
+            price: dbProduct.price
+        };
+    });
+
     c.executionCtx.waitUntil(
         sendOrderConfirmation(
             c.env,
@@ -107,7 +121,7 @@ app.post('/api/orders', async (c) => {
             customer_name,
             customer_email,
             customer_phone,
-            items,
+            verifiedItems,
             cancelLink
         )
     )
@@ -253,27 +267,30 @@ app.put('/admin/api/products/:id', async (c) => {
     const oldData = await c.env.DB.prepare('SELECT * FROM products WHERE id = ?').bind(id).first()
     if (!oldData) return c.json({ error: 'Nenalezeno' }, 404)
 
-    // Delete old cover image from R2 if new provided
-    if (image_url && oldData.image_url && image_url !== oldData.image_url) {
-        const oldPath = oldData.image_url.replace('/assets/', '')
-        if (oldPath) await c.env.BUCKET.delete(oldPath)
+    const newImageUrl = image_url !== undefined ? image_url : oldData.image_url;
+    const newGalleryUrls = gallery_urls !== undefined ? gallery_urls : oldData.gallery_urls;
+
+    // If the old image exists and is being changed or removed, delete it from R2
+    if (oldData.image_url && oldData.image_url !== newImageUrl) {
+        const oldKey = oldData.image_url.split('/').pop();
+        if (oldKey) await c.env.BUCKET.delete(`products/${oldKey}`);
     }
 
-    // Delete old gallery from R2 if new provided
-    if (gallery_urls !== undefined && oldData.gallery_urls && gallery_urls !== oldData.gallery_urls) {
-        const oldGallery = oldData.gallery_urls.split(',')
-        for (const url of oldGallery) {
-            const key = url.replace('/assets/', '')
-            if (key) await c.env.BUCKET.delete(key)
+    // If the old gallery exists, find which images were removed and delete them
+    if (oldData.gallery_urls) {
+        const oldUrls = oldData.gallery_urls.split(',');
+        const newUrlsList = newGalleryUrls ? newGalleryUrls.split(',') : [];
+        const urlsToDelete = oldUrls.filter(url => !newUrlsList.includes(url));
+
+        for (const url of urlsToDelete) {
+            const oldKey = url.split('/').pop();
+            if (oldKey) await c.env.BUCKET.delete(`products/${oldKey}`);
         }
     }
 
-    const finalImage = image_url !== undefined ? image_url : oldData.image_url
-    const finalGallery = gallery_urls !== undefined ? gallery_urls : oldData.gallery_urls
-
     await c.env.DB.prepare(
         'UPDATE products SET name = ?, price = ?, description = ?, image_url = ?, gallery_urls = ?, sizes = ? WHERE id = ?'
-    ).bind(name, price, description, finalImage, finalGallery, sizes, id).run()
+    ).bind(name, price, description, newImageUrl, newGalleryUrls, sizes, id).run()
 
     await logAction(c.env.DB, adminEmail, 'UPDATE', 'PRODUCT', id, { name })
     return c.json({ success: true })
