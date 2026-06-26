@@ -94,7 +94,6 @@ async function handleCheckoutSubmit(e) {
     const legalLabel = document.getElementById('legal-label');
 
     if (!legalCheck.checked) {
-        alert('Pro odeslání rezervace musíte vyjádřit souhlas se zpracováním osobních údajů.');
         legalLabel.style.color = '#ff4d4d';
         legalCheck.focus();
         return;
@@ -127,11 +126,26 @@ async function handleCheckoutSubmit(e) {
 
         if (!response.ok) throw new Error();
 
-        sessionStorage.setItem('tjsb_order_success', 'true');
-        clearCart();
-        window.location.href = '/eshop.html';
+        if (response.ok) {
+            const orderSummary = {
+                customerName: document.getElementById('cust-name').value,
+                customerEmail: document.getElementById('cust-email').value,
+                customerPhone: document.getElementById('cust-phone').value,
+                items: cart, 
+                totalPrice: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+            };
+
+            
+            sessionStorage.setItem('tjsb_last_order', JSON.stringify(orderSummary));
+
+            clearCart();
+            window.location.href = '/success.html';
+        } else {
+            throw new Error(response.error || 'Neznámá chyba při odesílání.');
+        }
     } catch (error) {
         alert('Něco se pokazilo při odesílání objednávky. Zkuste to prosím znovu.');
+        console.log(error)
 
         submitBtn.disabled = false;
         submitBtn.textContent = originalText;

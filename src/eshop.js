@@ -1,5 +1,15 @@
+import { getCart } from './cartManager.js';
+
 document.addEventListener('DOMContentLoaded', () => {
     loadProducts();
+
+    const cart = getCart();
+    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+    const cartCountElem = document.getElementById('cart-count');
+    
+    if (cartCountElem) {
+        cartCountElem.textContent = totalItems;
+    }
 
     if (sessionStorage.getItem('tjsb_order_success')) {
         sessionStorage.removeItem('tjsb_order_success');

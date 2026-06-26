@@ -15,6 +15,7 @@ export default defineConfig({
                 eshop: resolve(__dirname, 'eshop.html'),
                 product: resolve(__dirname, 'product.html'),
                 cart: resolve(__dirname, 'cart.html'),
+                success: resolve(__dirname, 'success.html'),
                 gdpr: resolve(__dirname, 'gdpr.html'),
                 admin: resolve(__dirname, 'admin.html')
             }
