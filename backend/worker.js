@@ -1,4 +1,5 @@
 import { Hono } from 'hono'
+import { sendOrderConfirmation} from "../src/email.js";
 
 const app = new Hono()
 
@@ -71,13 +72,16 @@ app.post('/api/orders', async (c) => {
     ).bind(...uniqueProductIds).all()
 
     if (existing.results.length !== uniqueProductIds.length) {
-        return c.json({ error: 'Některé produkty v objednávce neexistují' }, 400)
+        return c.json({ error: 'Některé produkty jsme nenašli, zkontrolujte objednávku' }, 400)
     }
+
+    // Generate cancellation token
+    const cancelToken = crypto.randomUUID()
 
     // Safe write to db
     const orderResult = await c.env.DB.prepare(
-        'INSERT INTO orders (customer_name, customer_email, customer_phone, status) VALUES (?, ?, ?, ?)'
-    ).bind(customer_name, customer_email, customer_phone.replace(/\s/g, ''), 'PENDING').run()
+        'INSERT INTO orders (customer_name, customer_email, customer_phone, status, cancel_token) VALUES (?, ?, ?, ?, ?)'
+    ).bind(customer_name, customer_email, customer_phone.replace(/\s/g, ''), 'PENDING', cancelToken).run()
 
     const orderId = orderResult.meta.last_row_id
 
@@ -89,7 +93,64 @@ app.post('/api/orders', async (c) => {
 
     await c.env.DB.batch(stmts)
 
+    const host = new URL(c.req.url).origin
+    const cancelLink = `${host}/api/cancel?id=${orderId}&token=${cancelToken}`
+
+    if (c.env.ENABLE_EMAILS !== 'true') {
+        console.log(`[EMAIL LINK] E-mails are disabled. Cancel link for order: \n${cancelLink}`);
+    }
+
+    c.executionCtx.waitUntil(
+        sendOrderConfirmation(
+            c.env,
+            orderId,
+            customer_name,
+            customer_email,
+            customer_phone,
+            items,
+            cancelLink
+        )
+    )
+
     return c.json({ success: true, orderId })
+})
+
+// Customer order cancellation
+app.get('/api/cancel', async (c) => {
+    const id = c.req.query('id')
+    const token = c.req.query('token')
+
+    if (!id || !token) {
+        return c.html('<div style="font-family: sans-serif; text-align: center; margin-top: 50px;"><h1>Chyba</h1><p>Neplatný nebo poškozený odkaz.</p></div>', 400)
+    }
+
+    const order = await c.env.DB.prepare(
+        'SELECT status, cancel_token FROM orders WHERE id = ?'
+    ).bind(id).first()
+
+    if (!order || order.cancel_token !== token) {
+        return c.html('<div style="font-family: sans-serif; text-align: center; margin-top: 50px;"><h1 style="color: #dc3545;">Přístup odepřen</h1><p>Tento odkaz není platný pro zrušení dané objednávky.</p></div>', 403)
+    }
+
+    if (order.status === 'CANCELED' || order.status === 'CANCELED_BY_USER') {
+        return c.html('<div style="font-family: sans-serif; text-align: center; margin-top: 50px;"><h1>Již zrušeno</h1><p>Tato rezervace již byla stornována dříve.</p></div>')
+    }
+
+    if (order.status !== 'PENDING') {
+        return c.html('<div style="font-family: sans-serif; text-align: center; margin-top: 50px;"><h1>Nelze zrušit</h1><p>Tuto objednávku již nelze automaticky stornovat. Pravděpodobně se již připravuje, nebo byla vyřízena. Kontaktujte nás prosím přímo.</p></div>', 400)
+    }
+
+    await c.env.DB.prepare(
+        'UPDATE orders SET status = ? WHERE id = ?'
+    ).bind('CANCELED_BY_USER', id).run()
+
+    return c.html(`
+        <div style="font-family: Arial, sans-serif; text-align: center; margin-top: 10vh; color: #111a3b;">
+            <div style="font-size: 4rem; margin-bottom: 1rem;">🗑️</div>
+            <h1 style="color: #dc3545;">Rezervace byla úspěšně stornována</h1>
+            <a href="/eshop.html" style="display: inline-block; margin-top: 2rem; padding: 0.8rem 1.5rem; background: #111a3b; color: #ffd700; text-decoration: none; border-radius: 6px; font-weight: bold;">Zpět na e-shop</a>
+        </div>
+    `)
 })
 
 
@@ -267,6 +328,17 @@ app.put('/admin/api/orders/:id/status', async (c) => {
     const { status } = await c.req.json()
     const adminEmail = c.get('adminEmail')
 
+    // Sanity check
+    const currentOrder = await c.env.DB.prepare('SELECT status FROM orders WHERE id = ?').bind(id).first()
+
+    if (!currentOrder) {
+        return c.json({ error: 'Objednávka nenalezena.' }, 404)
+    }
+
+    if (currentOrder.status === 'CANCELED_BY_USER') {
+        return c.json({ error: 'Objednávku nelze změnit, protože již byla stornována zákazníkem.' }, 409)
+    }
+
     await c.env.DB.prepare('UPDATE orders SET status = ? WHERE id = ?').bind(status, id).run()
     await logAction(c.env.DB, adminEmail, 'STATUS_CHANGE', 'ORDER', id, { novy_status: status })
 
@@ -285,9 +357,45 @@ app.get('/admin/api/audit', async (c) => {
 // ============================================
 app.onError((err, c) => {
     console.error('API Error:', err)
-    return c.json({ error: 'Interní chyba serveru' }, 500)
+    return c.json({ error: 'Chyba serveru' }, 500)
 })
 
 app.notFound((c) => c.json({ error: 'Endpoint nenalezen' }, 404))
 
-export default app
+export default {
+    fetch: app.fetch,
+
+    async scheduled(event, env, ctx) {
+        console.log("[CRON] Running database cleanup...");
+
+        try {
+            // Delete old orders and audit logs
+            const ordersResult = await env.DB.prepare(`
+                DELETE FROM orders 
+                WHERE created_at <= datetime('now', '-1 month') 
+                AND status IN ('COMPLETED', 'CANCELED')
+            `).run();
+
+            // Delete week old logs
+            const logsResult = await env.DB.prepare(`
+                DELETE FROM audit_logs 
+                WHERE created_at <= datetime('now', '-7 days')
+            `).run();
+
+            // Log cleanup
+            const details = JSON.stringify({
+                deleted_orders: ordersResult.meta.changes,
+                deleted_logs: logsResult.meta.changes
+            });
+
+            await env.DB.prepare(`
+                INSERT INTO audit_logs (admin_email, action, entity, details) 
+                VALUES (?, ?, ?, ?)
+            `).bind('system@cron', 'SYSTEM_CLEANUP', 'DATABASE', details).run();
+
+            console.log(`[CRON SUCCESS] Cleanup completed. Removed: ${ordersResult.meta.changes} old orders, removed: ${logsResult.meta.changes} old logs`);
+        } catch (e) {
+            console.error("[CRON ERROR] Error during cleanup:", e);
+        }
+    }
+};

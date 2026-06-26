@@ -5,7 +5,8 @@ export default defineConfig({
     server: {
         proxy: {
             '/api': 'http://127.0.0.1:8787',
-            '/admin/api': 'http://localhost:8787'
+            '/admin/api': 'http://localhost:8787',
+            '/assets': 'http://127.0.0.1:8787'
         }
     },
     build: {
@@ -20,5 +21,24 @@ export default defineConfig({
                 admin: resolve(__dirname, 'admin.html')
             }
         }
-    }
+    },
+    plugins: [
+        {
+            name: 'mpa-fallback',
+            configureServer(server) {
+                return () => {
+                    server.middlewares.use((req, res, next) => {
+                        const url = req.url.split('?')[0];
+
+                        if (url.includes('.') || url.startsWith('/api') || url.startsWith('/admin/api')) {
+                            return next();
+                        }
+
+                        req.url = '/index.html';
+                        next();
+                    });
+                };
+            }
+        }
+    ]
 })

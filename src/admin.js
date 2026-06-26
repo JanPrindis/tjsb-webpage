@@ -1,3 +1,5 @@
+import { showToast } from './toast.js';
+
 document.addEventListener('DOMContentLoaded', () => {
     initTabs();
     initModals();
@@ -38,13 +40,19 @@ function initTabs() {
 // ORDERS
 // ============================================
 const STATUS_DICT = {
-    'PENDING': 'NOVÁ', 'COMPLETED': 'VYZVEDNUTO', 'CANCELED': 'STORNO',
-    'NOVÁ': 'NOVÁ', 'DOKONČENÁ': 'VYZVEDNUTO', 'STORNO': 'STORNO'
+    'PENDING': 'NOVÁ',
+    'READY': 'PŘIPRAVENA',
+    'COMPLETED': 'VYZVEDNUTO',
+    'CANCELED': 'STORNOVANÁ',
+    'CANCELED_BY_USER': 'STORNOVANÁ ZÁKAZNÍKEM'
 };
 
 const STATUS_COLORS = {
-    'PENDING': 'badge-new', 'COMPLETED': 'badge-done', 'CANCELED': 'badge-storno',
-    'NOVÁ': 'badge-new', 'DOKONČENÁ': 'badge-done', 'STORNO': 'badge-storno'
+    'PENDING': 'badge-new',
+    'READY': 'badge-ready',
+    'COMPLETED': 'badge-done',
+    'CANCELED': 'badge-cancel',
+    'CANCELED_BY_USER': 'badge-cancel'
 };
 
 let currentOrders = [];
@@ -187,10 +195,23 @@ window.openOrderModal = async (id) => {
         }
         body.innerHTML = html;
 
-        actions.innerHTML = `
-            ${dbStatus !== 'COMPLETED' ? `<button class="btn-action-success modal-btn" onclick="changeOrderStatus(${id}, 'COMPLETED')">Vyzvednuto</button>` : ''}
-            ${dbStatus !== 'CANCELED' ? `<button class="btn-action-danger modal-btn" onclick="changeOrderStatus(${id}, 'CANCELED')">Stornovat</button>` : ''}
-        `;
+        // State change buttons
+        let actionButtons = '';
+
+        if (dbStatus === 'PENDING') {
+            actionButtons += `<button class="btn-action-primary modal-btn" onclick="changeOrderStatus(${id}, 'READY')" style="background-color: #3498db; color: white;">Označit jako připravené</button>`;
+            actionButtons += `<button class="btn-action-danger modal-btn" onclick="changeOrderStatus(${id}, 'CANCELED')">Stornovat</button>`;
+        }
+        else if (dbStatus === 'READY') {
+            actionButtons += `<button class="btn-action-success modal-btn" onclick="changeOrderStatus(${id}, 'COMPLETED')">Vyzvednuto</button>`;
+            actionButtons += `<button class="btn-action-secondary modal-btn" onclick="changeOrderStatus(${id}, 'PENDING')">Zpět na "Nová"</button>`;
+            actionButtons += `<button class="btn-action-danger modal-btn" onclick="changeOrderStatus(${id}, 'CANCELED')">Stornovat</button>`;
+        }
+        else if (dbStatus === 'COMPLETED' || dbStatus === 'CANCELED') {
+            actionButtons += `<button class="btn-action-secondary modal-btn" onclick="changeOrderStatus(${id}, 'PENDING')">Vrátit zpět na "Nová"</button>`;
+        }
+
+        actions.innerHTML = actionButtons;
     } catch (e) {
         body.innerHTML = `<p class="error-msg">Chyba při stahování detailů: ${e.message}</p>`;
     }
@@ -199,15 +220,34 @@ window.openOrderModal = async (id) => {
 window.changeOrderStatus = async (id, status) => {
     if (status === 'CANCELED' && !confirm('Opravdu stornovat objednávku?')) return;
 
-    await fetch(`/admin/api/orders/${id}/status`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status })
-    });
+    try {
+        const response = await fetch(`/admin/api/orders/${id}/status`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status })
+        });
 
-    document.getElementById('order-modal').style.display = 'none';
-    await loadOrders();
-    await loadAudit();
+        // Check if the API returned an error
+        if (!response.ok) {
+            const errorData = await response.json();
+            // Throw an error with the message from the backend
+            throw new Error(errorData.error || `HTTP chyba: ${response.status}`);
+        }
+
+        // If successful, close the modal and refresh data
+        document.getElementById('order-modal').style.display = 'none';
+        await loadOrders();
+        await loadAudit();
+        showToast('Stav změněn', `Stav objednávky #${id} byl úspěšně aktualizován.`, 'success');
+
+    } catch (error) {
+        // Display the error message from the backend in a toast
+        showToast('Změna se nezdařila', error.message, 'error');
+
+        // Also refresh the data to show the admin the *actual* current state
+        document.getElementById('order-modal').style.display = 'none';
+        await loadOrders();
+    }
 }
 
 function initModals() {
@@ -223,6 +263,8 @@ let currentProducts = [];
 
 async function loadProducts() {
     const container = document.getElementById('admin-products-list');
+    const placeholderSvg = '/src/assets/camera.svg';
+
     try {
         const res = await fetch('/api/products');
         currentProducts = await res.json();
@@ -234,16 +276,19 @@ async function loadProducts() {
 
         let html = '';
         currentProducts.forEach(p => {
+            // Use the product image or fall back to the placeholder
+            const imageSrc = p.image_url || placeholderSvg;
+
             html += `
-                <div class="admin-item-row">
+                <div class="admin-item-row" onclick="editProduct(${p.id})">
                     <div class="admin-item-img">
-                        ${p.image_url ? `<img src="${p.image_url}">` : 'x'}
+                        <img src="${imageSrc}" alt="${p.name}" onerror="this.onerror=null;this.src='${placeholderSvg}';">
                     </div>
                     <div class="admin-item-info">
                         <strong>${p.name}</strong>
                         <span>${p.price} Kč</span>
                     </div>
-                    <button class="btn-action-secondary btn-sm" onclick="editProduct(${p.id})">✏️ Upravit</button>
+                    <button class="btn-action-secondary btn-sm">✏️ Upravit</button>
                 </div>
             `;
         });
@@ -362,7 +407,8 @@ async function handleProductSave(e) {
 
         if (!dbRes.ok) throw new Error('Chyba při ukládání do databáze');
 
-        status.textContent = 'Úspěšně uloženo!';
+        showToast('Uloženo', 'Produkt byl úspěšně aktualizován.', 'success');
+
         setTimeout(() => {
             closeProductForm();
             loadProducts();
@@ -370,8 +416,10 @@ async function handleProductSave(e) {
         }, 1000);
 
     } catch (error) {
+        showToast('Chyba při ukládání', error.message, 'error');
         status.innerHTML = `<span style="color: #ff4d4d;">${error.message}</span>`;
     } finally {
+        status.innerHTML = '';
         btn.disabled = false;
         btn.textContent = originalText;
         btn.style.opacity = '1';

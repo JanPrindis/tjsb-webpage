@@ -19,6 +19,7 @@ CREATE TABLE orders (
     customer_email TEXT NOT NULL,
     customer_phone TEXT NOT NULL,
     status TEXT DEFAULT 'PENDING',
+    cancel_token TEXT NOT NULL,
     created_at DATETIME default CURRENT_TIMESTAMP
 );
 
@@ -42,27 +43,3 @@ CREATE TABLE audit_logs (
     details TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
-
--- Testovací data
-INSERT INTO products (name, price, description, image_url, gallery_urls, sizes) VALUES
-('Výroční Tričko Sokol', 450, 'Limitovaná bavlněná edice.', '/tricko.jpg', NULL, 'S, M, L, XL, XXL'),
-('Zimní Kulich', 300, 'Teplá čepice s bambulí.', '/kulich.jpg', NULL, NULL);
-
--- ==========================================
--- ZKUŠEBNÍ DATA
--- ==========================================
-INSERT INTO products (name, price, description, image_url, sizes) VALUES
-('Výroční Tričko Sokol', 450, 'Limitovaná bavlněná edice.', '/tricko.jpg', 'S, M, L, XL, XXL'),
-('Zimní Kulich', 300, 'Teplá čepice s bambulí.', '/kulich.jpg', NULL);
-
--- Objednávka 1 (Nová)
-INSERT INTO orders (customer_name, customer_email, customer_phone, status)
-VALUES ('Pepa Z Depa', 'pepa@seznam.cz', '+420123456789', 'PENDING');
-INSERT INTO order_items (order_id, product_id, product_name, size, quantity, price)
-VALUES (1, 1, 'Výroční Tričko Sokol', 'XL', 1, 450);
-
--- Objednávka 2 (Dokončená)
-INSERT INTO orders (customer_name, customer_email, customer_phone, status)
-VALUES ('Karel Kryl', 'kaja@email.cz', '+420111222333', 'COMPLETED');
-INSERT INTO order_items (order_id, product_id, product_name, size, quantity, price)
-VALUES (2, 2, 'Zimní Kulich', NULL, 2, 300);

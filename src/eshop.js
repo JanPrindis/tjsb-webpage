@@ -19,7 +19,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function loadProducts() {
     const grid = document.getElementById('products-grid');
-    if (!grid) {return;}
+    if (!grid) {
+        return;
+    }
+
+    // Define the placeholder path
+    const placeholderSvg = '/src/assets/camera.svg';
 
     try {
         const response = await fetch('/api/products');
@@ -28,10 +33,13 @@ async function loadProducts() {
         grid.innerHTML = '';
 
         products.forEach(product => {
+            // Use the product image or fallback to the placeholder
+            const imageSrc = product.image_url || placeholderSvg;
+
             const cardHTML = `
                 <div class="product-card">
                     <div class="product-image-wrapper">
-                        ${product.image_url ? `<img src="${product.image_url}" alt="${product.name}">` : '<span>Bez obrázku</span>'}
+                        <img src="${imageSrc}" alt="${product.name}" onerror="this.onerror=null;this.src='${placeholderSvg}';">
                     </div>
                     <h3>${product.name}</h3>
                     <p class="product-price">${product.price} Kč</p>
@@ -44,26 +52,4 @@ async function loadProducts() {
         console.error('Chyba:', error);
         grid.innerHTML = '<p>Nepodařilo se načíst produkty.</p>';
     }
-}
-
-function showOrderSuccessToast() {
-    const existingToast = document.querySelector('.toast-notification');
-    if (existingToast) existingToast.remove();
-
-    const toast = document.createElement('div');
-    toast.className = 'toast-notification';
-
-    toast.innerHTML = `
-        <div class="toast-icon">✅</div>
-        <div class="toast-text">
-            <strong>Rezervace úspěšná!</strong>
-            <span>Objednávka přijata, ozveme se ti.</span>
-        </div>
-    `;
-
-    document.body.appendChild(toast);
-
-    setTimeout(() => {
-        if (toast.parentElement) toast.remove();
-    }, 4000);
 }

@@ -13,3 +13,10 @@ database_id = "5f0c7ff3-45c6-4195-8049-e9151135cfaf"
 [[r2_buckets]]
 binding = "BUCKET"
 bucket_name = "tjsb-eshop"
+
+[vars]
+ENVIRONMENT = "production"
+ENABLE_EMAILS = "true"
+
+[triggers]
+crons = ["0 3 * * *"]

@@ -1,26 +1,37 @@
 import { addToCart, updateCartCount } from './cartManager.js';
+import { showToast } from './toast.js';
+
+const placeholderSvg = '/src/assets/camera.svg';
 
 document.addEventListener('DOMContentLoaded', () => {
     updateCartCount();
-    loadProductDetail();
+    loadProductDetails();
+
+    // Lightbox setup
+    const lightbox = document.getElementById('image-lightbox');
+    const lightboxClose = document.querySelector('.lightbox-close');
+    if (lightbox && lightboxClose) {
+        lightboxClose.addEventListener('click', () => lightbox.classList.remove('active'));
+        lightbox.addEventListener('click', (e) => {
+            if (e.target === lightbox) lightbox.classList.remove('active');
+        });
+    }
 });
 
-async function loadProductDetail() {
+async function loadProductDetails() {
     const container = document.getElementById('product-container');
-    if (!container) return;
-
     const urlParams = new URLSearchParams(window.location.search);
     const productId = urlParams.get('id');
 
     if (!productId) {
-        container.innerHTML = '<p class="error-msg">Chyba: Produkt nebyl vybrán.</p>';
+        container.innerHTML = '<p class="error-msg">Produkt nebyl specifikován.</p>';
         return;
     }
 
     try {
         const response = await fetch(`/api/products/${productId}`);
-        if (!response.ok) throw new Error();
-        const product = await response.json();
+        if (!response.ok) throw new Error('Produkt nenalezen');
+        const product = await response.json(); // 'product' is now correctly scoped to this block
 
         renderDetail(product, container);
     } catch (error) {
@@ -35,28 +46,33 @@ function renderDetail(product, container) {
     let allImages = [];
     if (product.image_url) allImages.push(product.image_url);
     if (product.gallery_urls) allImages.push(...product.gallery_urls.split(','));
+    allImages = [...new Set(allImages)]; // Remove duplicates
 
-    let imagesHTML = '<div class="no-img-placeholder">Bez obrázku</div>';
+    let imagesHTML;
 
-    if (allImages.length > 0) {
-        if (allImages.length === 1) {
-            imagesHTML = `<img src="${allImages[0]}" alt="${product.name}" class="single-product-img">`;
-        } else {
-            imagesHTML = `
-                <div class="swiper mySwiper">
-                    <div class="swiper-wrapper">
-                        ${allImages.map(imgSrc => `
-                            <div class="swiper-slide">
-                                <img src="${imgSrc}" alt="${product.name}">
-                            </div>
-                        `).join('')}
-                    </div>
-                    <div class="swiper-button-next"></div>
-                    <div class="swiper-button-prev"></div>
-                    <div class="swiper-pagination"></div>
+    // ✅ UPDATED LOGIC: Add fallback for all image scenarios
+    if (allImages.length === 0) {
+        // Case 1: No images exist, show the placeholder SVG directly.
+        imagesHTML = `<img src="${placeholderSvg}" alt="Bez obrázku" class="single-product-img">`;
+    } else if (allImages.length === 1) {
+        // Case 2: One image exists, add the onerror fallback.
+        imagesHTML = `<img src="${allImages[0]}" alt="${product.name}" class="single-product-img" onerror="this.onerror=null;this.src='${placeholderSvg}';">`;
+    } else {
+        // Case 3: Multiple images for a slider, add onerror to each one.
+        imagesHTML = `
+            <div class="swiper mySwiper">
+                <div class="swiper-wrapper">
+                    ${allImages.map(imgSrc => `
+                        <div class="swiper-slide">
+                            <img src="${imgSrc}" alt="${product.name}" onerror="this.onerror=null;this.src='${placeholderSvg}';">
+                        </div>
+                    `).join('')}
                 </div>
-            `;
-        }
+                <div class="swiper-button-next"></div>
+                <div class="swiper-button-prev"></div>
+                <div class="swiper-pagination"></div>
+            </div>
+        `;
     }
 
     if (hasSizes) {
@@ -150,32 +166,4 @@ window.changeMainImage = (src, thumbElem) => {
 
     document.querySelectorAll('.thumb-img').forEach(el => el.classList.remove('active-thumb'));
     thumbElem.classList.add('active-thumb');
-}
-
-function showToast(productName, size) {
-    const existingToast = document.querySelector('.toast-notification');
-    if (existingToast) existingToast.remove();
-
-    const toast = document.createElement('div');
-    toast.className = 'toast-notification';
-    toast.innerHTML = `
-        <div class="toast-icon">✅</div>
-        <div class="toast-text">
-            <strong>Přidáno do košíku</strong>
-            <span>${productName} ${size ? `(Velikost: ${size})` : ''}</span>
-        </div>
-    `;
-
-    document.body.appendChild(toast);
-
-    setTimeout(() => {
-        if (toast.parentElement) toast.remove();
-    }, 3000);
-
-    const cartBtn = document.querySelector('.cart-btn');
-    if (cartBtn) {
-        cartBtn.classList.remove('cart-bump');
-        void cartBtn.offsetWidth;
-        cartBtn.classList.add('cart-bump');
-    }
 }
