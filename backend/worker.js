@@ -93,7 +93,7 @@ app.post('/api/orders', async (c) => {
         const dbProduct = productMap.get(item.id); // Get the trusted product data
         return c.env.DB.prepare(
             'INSERT INTO order_items (order_id, product_id, product_name, size, quantity, price) VALUES (?, ?, ?, ?, ?, ?)'
-        ).bind(orderId, item.id, dbProduct.name, item.size || null, item.quantity, dbProduct.price); // Use dbProduct.name and dbProduct.price
+        ).bind(orderId, item.id, dbProduct.name, item.size || null, item.quantity, dbProduct.price);
     });
 
     await c.env.DB.batch(stmts)
