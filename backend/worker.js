@@ -183,7 +183,7 @@ const requireAccessAuth = async (c, next) => {
     const jwt = c.req.header('CF-Access-Jwt-Assertion')
 
     if (!email || !jwt) {
-        return c.json({ error: 'Neautorizováno. Chybí hlavičky Cloudflare Access.' }, 403)
+        return c.json({ error: 'Unauthorized.' }, 403)
     }
 
     c.set('adminEmail', email)
@@ -232,6 +232,11 @@ app.post('/admin/api/upload', async (c) => {
 
 // Local dev helper
 app.get('/assets/*', async (c) => {
+
+    if (c.env.ENVIRONMENT !== 'development') {
+        return c.json({ error: 'Endpoint not available for production' }, 404);
+    }
+
     const path = new URL(c.req.url).pathname
     const key = path.replace('/assets/', '')
 
