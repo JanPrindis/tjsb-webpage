@@ -10,11 +10,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (cartCountElem) {
         cartCountElem.textContent = totalItems;
     }
-
-    if (sessionStorage.getItem('tjsb_order_success')) {
-        sessionStorage.removeItem('tjsb_order_success');
-        showOrderSuccessToast();
-    }
 });
 
 async function loadProducts() {
