@@ -65,6 +65,7 @@
     font-weight: bold;
     text-transform: uppercase;
     transition: color 0.2s;
+    cursor: pointer;
 }
 
 .back-home-link:hover {

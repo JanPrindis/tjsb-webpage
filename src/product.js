@@ -43,6 +43,9 @@ function renderDetail(product, container) {
     const hasSizes = product.sizes && product.sizes.trim() !== '';
     let sizeHTML = '';
 
+    // Title
+    document.title = `${product.name} | TJ Sokol Bohuňovice`;
+
     let allImages = [];
     if (product.image_url) allImages.push(product.image_url);
     if (product.gallery_urls) allImages.push(...product.gallery_urls.split(','));
@@ -50,15 +53,11 @@ function renderDetail(product, container) {
 
     let imagesHTML;
 
-    // ✅ UPDATED LOGIC: Add fallback for all image scenarios
     if (allImages.length === 0) {
-        // Case 1: No images exist, show the placeholder SVG directly.
         imagesHTML = `<img src="${placeholderSvg}" alt="Bez obrázku" class="single-product-img">`;
     } else if (allImages.length === 1) {
-        // Case 2: One image exists, add the onerror fallback.
         imagesHTML = `<img src="${allImages[0]}" alt="${product.name}" class="single-product-img" onerror="this.onerror=null;this.src='${placeholderSvg}';">`;
     } else {
-        // Case 3: Multiple images for a slider, add onerror to each one.
         imagesHTML = `
             <div class="swiper mySwiper">
                 <div class="swiper-wrapper">
@@ -84,6 +83,8 @@ function renderDetail(product, container) {
                     <option value="" disabled selected>-- Zvolte velikost --</option>
                     ${sizesArray.map(s => `<option value="${s}">${s}</option>`).join('')}
                 </select>
+                <br>
+                <a href="/velikosti.html" class="size-link">Tabulka velikostí</a>
             </div>
         `;
     }
@@ -142,7 +143,7 @@ function renderDetail(product, container) {
         }
     });
 
-    // --- LIGHTBOX ---
+    // Lightbox
     const lightbox = document.getElementById('image-lightbox');
     const lightboxImg = document.getElementById('lightbox-img');
     const lightboxClose = document.querySelector('.lightbox-close');

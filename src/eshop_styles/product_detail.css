@@ -10,7 +10,7 @@
 }
 
 .product-detail-img-zone {
-    background: #0a0f24;
+    background: #ffffff;
     border-radius: 12px;
     display: flex;
     align-items: center;
@@ -67,6 +67,12 @@
     text-transform: uppercase;
     font-size: 0.85rem;
     letter-spacing: 1px;
+}
+
+.size-link {
+    color: var(--yellow, #ffd700);
+    display: block;
+    margin-top: 0.5rem;
 }
 
 /* --- SWIPER & LIGHTBOX --- */

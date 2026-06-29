@@ -18,6 +18,7 @@ export default defineConfig({
                 cart: resolve(__dirname, 'cart.html'),
                 success: resolve(__dirname, 'success.html'),
                 gdpr: resolve(__dirname, 'gdpr.html'),
+                sizes: resolve(__dirname, 'velikosti.html'),
                 admin: resolve(__dirname, 'admin.html')
             }
         }

@@ -17,8 +17,8 @@ function renderCartPage() {
     if (cart.length === 0) {
         tableContainer.innerHTML = `
             <div class="empty-cart-box">
-                <p>Tvůj košík zeje prázdnotou.</p>
-                <a href="/eshop.html" class="btn-action-primary" style="display:inline-block; text-decoration:none;">Vrátit se do eshopu</a>
+                <p>Tvůj košík je prázdný.</p>
+                <a href="/eshop.html" class="btn-action-primary" style="display:inline-block; text-decoration:none;">Pojďme to napravit!</a>
             </div>
         `;
         form.style.display = 'none';
