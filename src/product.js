@@ -137,7 +137,7 @@ function renderDetail(product, container) {
 
         const success = addToCart(product.id, product.name, product.price, selectedSize);
         if (success) {
-            showToast(product.name, selectedSize);
+            showToast('Přidáno', `${product.name}, Velikost ${selectedSize}`);
         } else {
             alert('Do košíku se vejde maximálně 20 položek. Pro hromadnou objednávku nás prosím kontaktujte napřímo.');
         }
