@@ -123,7 +123,8 @@ function renderDetail(product, container) {
     }
 
     // Add to cart button
-    document.getElementById('btn-add-to-cart').addEventListener('click', () => {
+    const addToCartBtn = document.getElementById('btn-add-to-cart');
+    addToCartBtn.addEventListener('click', () => {
         let selectedSize = null;
         if (hasSizes) {
             const select = document.getElementById('size-select');
@@ -136,8 +137,23 @@ function renderDetail(product, container) {
         }
 
         const success = addToCart(product.id, product.name, product.price, selectedSize);
+
         if (success) {
-            showToast('Přidáno', `${product.name}, Velikost ${selectedSize}`);
+            // Disable the button and change its appearance
+            addToCartBtn.disabled = true;
+            addToCartBtn.classList.add('success');
+            addToCartBtn.innerHTML = 'Přidáno';
+
+            // Show the toast notification
+            showToast('Přidáno', `${product.name}${selectedSize ? `, Velikost ${selectedSize}` : ''}`);
+
+            // Revert the button to its original state
+            setTimeout(() => {
+                addToCartBtn.disabled = false;
+                addToCartBtn.classList.remove('success');
+                addToCartBtn.innerHTML = 'Přidat do košíku';
+            }, 1000);
+
         } else {
             alert('Do košíku se vejde maximálně 20 položek. Pro hromadnou objednávku nás prosím kontaktujte napřímo.');
         }
