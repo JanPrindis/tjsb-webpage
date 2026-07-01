@@ -25,6 +25,11 @@ async function loadProducts() {
         const response = await fetch('/api/products');
         const products = await response.json();
 
+        if (products.length === 0) {
+            grid.innerHTML = '<p class="info-msg">V tuto chvíli nejsou v nabídce žádné produkty.</p>';
+            return;
+        }
+
         grid.innerHTML = '';
 
         products.forEach(product => {
@@ -33,18 +38,19 @@ async function loadProducts() {
 
             const cardHTML = `
                 <div class="product-card">
-                    <div class="product-image-wrapper">
-                        <img src="${imageSrc}" alt="${product.name}" onerror="this.onerror=null;this.src='${placeholderSvg}';">
-                    </div>
-                    <h3>${product.name}</h3>
-                    <p class="product-price">${product.price} Kč</p>
-                    <a href="/product.html?id=${product.id}" class="btn-detail">Detail produktu</a>
+                    <a href="/product.html?id=${product.id}">
+                        <div class="product-image-wrapper">
+                            <img src="${imageSrc}" alt="${product.name}" onerror="this.onerror=null;this.src='${placeholderSvg}';">
+                        </div>
+                        <h3>${product.name}</h3>
+                        <p class="product-price">${product.price} Kč</p>
+                    </a>
                 </div>
             `;
             grid.innerHTML += cardHTML;
         });
     } catch (error) {
         console.error('Chyba:', error);
-        grid.innerHTML = '<p>Nepodařilo se načíst produkty.</p>';
+        grid.innerHTML = '<p class="error-msg">Nepodařilo se načíst produkty.</p>';
     }
 }
