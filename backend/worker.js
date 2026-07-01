@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import { sendOrderConfirmation} from "../src/email.js";
+import { sendOrderConfirmation, sendUncollectedEmail, sendCustomerCancelEmail, sendAdminCancelEmail } from "../src/email.js";
 
 const app = new Hono()
 
@@ -139,7 +139,7 @@ app.get('/api/cancel', async (c) => {
     }
 
     const order = await c.env.DB.prepare(
-        'SELECT status, cancel_token FROM orders WHERE id = ?'
+        'SELECT status, cancel_token, customer_name, customer_email FROM orders WHERE id = ?'
     ).bind(id).first()
 
     if (!order || order.cancel_token !== token) {
@@ -155,8 +155,12 @@ app.get('/api/cancel', async (c) => {
     }
 
     await c.env.DB.prepare(
-        'UPDATE orders SET status = ? WHERE id = ?'
+        'UPDATE orders SET status = ?, status_updated_at = CURRENT_TIMESTAMP WHERE id = ?'
     ).bind('CANCELED_BY_USER', id).run()
+
+    c.executionCtx.waitUntil(
+        sendCustomerCancelEmail(c.env, id, order.customer_name, order.customer_email)
+    )
 
     return c.html(`
         <div style="font-family: Arial, sans-serif; text-align: center; margin-top: 10vh; color: #111a3b;">
@@ -351,18 +355,26 @@ app.put('/admin/api/orders/:id/status', async (c) => {
     const adminEmail = c.get('adminEmail')
 
     // Sanity check
-    const currentOrder = await c.env.DB.prepare('SELECT status FROM orders WHERE id = ?').bind(id).first()
+    const currentOrder = await c.env.DB.prepare(
+        'SELECT status, customer_name, customer_email FROM orders WHERE id = ?'
+    ).bind(id).first()
 
     if (!currentOrder) {
         return c.json({ error: 'Objednávka nenalezena.' }, 404)
     }
 
-    if (currentOrder.status === 'CANCELED_BY_USER') {
-        return c.json({ error: 'Objednávku nelze změnit, protože již byla stornována zákazníkem.' }, 409)
+    if (currentOrder.status === 'CANCELED_BY_USER' || currentOrder.status === 'CANCELED_UNCOLLECTED') {
+        return c.json({ error: 'Objednávku nelze změnit, protože již byla stornována zákazníkem, nebo nevyzvednuta.' }, 409)
     }
 
-    await c.env.DB.prepare('UPDATE orders SET status = ? WHERE id = ?').bind(status, id).run()
+    await c.env.DB.prepare('UPDATE orders SET status = ?, status_updated_at = CURRENT_TIMESTAMP WHERE id = ?').bind(status, id).run()
     await logAction(c.env.DB, adminEmail, 'STATUS_CHANGE', 'ORDER', id, { novy_status: status })
+
+    if (status === 'CANCELED') {
+        c.executionCtx.waitUntil(
+            sendAdminCancelEmail(c.env, id, currentOrder.customer_name, currentOrder.customer_email)
+        )
+    }
 
     return c.json({ success: true })
 })
@@ -391,17 +403,45 @@ export default {
         console.log("[CRON] Running database cleanup...");
 
         try {
+            // Cancel stale orders
+            const { results: staleOrders } = await env.DB.prepare(`
+                SELECT id, customer_name, customer_email 
+                FROM orders 
+                WHERE status = 'READY' 
+                AND status_updated_at <= datetime('now', '-7 days')
+            `).all();
+
+            for (const order of staleOrders) {
+                // Set order state to CANCELED_UNCOLLECTED
+                await env.DB.prepare(`
+                    UPDATE orders 
+                    SET status = 'CANCELED_UNCOLLECTED', status_updated_at = CURRENT_TIMESTAMP 
+                    WHERE id = ?
+                `).bind(order.id).run();
+
+                await env.DB.prepare(`
+                    INSERT INTO audit_logs (admin_email, action, entity, entity_id, details) 
+                    VALUES (?, ?, ?, ?, ?)
+                `).bind('system@cron', 'AUTO_CANCEL', 'ORDER', order.id, JSON.stringify({ reason: 'Nevyzvednuto' })).run();
+
+                // Inform client about cancellation
+                ctx.waitUntil(sendUncollectedEmail(env, order.id, order.customer_name, order.customer_email));
+            }
+            if (staleOrders.length > 0) {
+                console.log(`[CRON] Auto canceled ${staleOrders.length} stale orders.`);
+            }
+
             // Delete old orders and audit logs
             const ordersResult = await env.DB.prepare(`
                 DELETE FROM orders 
-                WHERE created_at <= datetime('now', '-1 month') 
-                AND status IN ('COMPLETED', 'CANCELED')
+                WHERE status_updated_at <= datetime('now', '-2 month') 
+                AND status IN ('COMPLETED', 'CANCELED', 'CANCELED_BY_USER', 'CANCELED_UNCOLLECTED')
             `).run();
 
             // Delete week old logs
             const logsResult = await env.DB.prepare(`
                 DELETE FROM audit_logs 
-                WHERE created_at <= datetime('now', '-7 days')
+                WHERE created_at <= datetime('now', '-14 days')
             `).run();
 
             // Log cleanup

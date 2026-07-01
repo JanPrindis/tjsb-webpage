@@ -44,7 +44,8 @@ const STATUS_DICT = {
     'READY': 'PŘIPRAVENA',
     'COMPLETED': 'VYZVEDNUTO',
     'CANCELED': 'STORNOVANÁ',
-    'CANCELED_BY_USER': 'STORNOVANÁ ZÁKAZNÍKEM'
+    'CANCELED_BY_USER': 'STORNOVANÁ ZÁKAZNÍKEM',
+    'CANCELED_UNCOLLECTED': 'STORNOVANÁ NEVYZVEDNUTO'
 };
 
 const STATUS_COLORS = {
@@ -52,7 +53,8 @@ const STATUS_COLORS = {
     'READY': 'badge-ready',
     'COMPLETED': 'badge-done',
     'CANCELED': 'badge-cancel',
-    'CANCELED_BY_USER': 'badge-cancel'
+    'CANCELED_BY_USER': 'badge-cancel',
+    'CANCELED_UNCOLLECTED': 'badge-cancel'
 };
 
 let currentOrders = [];

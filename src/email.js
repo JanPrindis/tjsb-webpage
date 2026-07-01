@@ -49,7 +49,7 @@ export async function sendOrderConfirmation(env, orderId, name, email, phone, it
         </li>`
     ).join('');
 
-    const subject = `Potvrzení rezervace - TJ Sokol Bohuňovice`;
+    const subject = `Potvrzení rezervace #${orderId} | TJ Sokol Bohuňovice`;
 
     const htmlContent = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
@@ -89,5 +89,79 @@ export async function sendOrderConfirmation(env, orderId, name, email, phone, it
         </div>
     `;
 
+    return await sendEmail(env, email, name, subject, htmlContent);
+}
+
+// ============================================
+// Stale order cancellation template
+// ============================================
+export async function sendUncollectedEmail(env, orderId, name, email) {
+    const subject = `Storno objednávky #${orderId} (Nevyzvednuto) | TJ Sokol Bohuňovice`;
+
+    const htmlContent = `
+        <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
+            <div style="background-color: #dc3545; color: #fff; padding: 20px; text-align: center;">
+                <h1 style="margin: 0; font-size: 24px;">Zrušení objednávky</h1>
+            </div>
+            <div style="padding: 30px;">
+                <p>Ahoj ${name},</p>
+                <p>tvá objednávka na tebe čekala připravená více než týden.</p>
+                <p>Jelikož sis ji nevyzvedl(a), náš systém ji <strong>automaticky stornoval</strong> a zboží bylo vráceno zpět do prodeje pro ostatní fanoušky.</p>
+                <p>Pokud o věci máš stále zájem, budeme rádi, když si vytvoříš na e-shopu novou rezervaci.</p>
+                <hr style="border: none; border-top: 1px dashed #ccc; margin: 40px 0 20px 0;">
+                <div style="background-color: #f1f1f1; padding: 10px; text-align: center; font-size: 11px; color: #999; border-radius: 4px;">
+                    Toto je automaticky generovaná zpráva, prosíme, neodpovídejte na ni.
+                </div>
+            </div>
+        </div>
+    `;
+
+    return await sendEmail(env, email, name, subject, htmlContent);
+}
+
+// ============================================
+// Customer cancellation confirmation
+// ============================================
+export async function sendCustomerCancelEmail(env, orderId, name, email) {
+    const subject = `Potvrzení storna rezervace #${orderId} | TJ Sokol Bohuňovice`;
+    const htmlContent = `
+        <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
+            <div style="background-color: #6c757d; color: #fff; padding: 20px; text-align: center;">
+                <h1 style="margin: 0; font-size: 24px;">Rezervace stornována</h1>
+            </div>
+            <div style="padding: 30px;">
+                <p>Ahoj ${name},</p>
+                <p>potvrzujeme, že jsme na tvou žádost <strong>stornovali rezervaci #${orderId}</strong>.</p>
+                <p>Zboží jsme uvolnili zpět do prodeje. Kdybys v budoucnu potřeboval(a) cokoliv dalšího, náš e-shop je ti vždy k dispozici.</p>
+                <hr style="border: none; border-top: 1px dashed #ccc; margin: 40px 0 20px 0;">
+                <div style="background-color: #f1f1f1; padding: 10px; text-align: center; font-size: 11px; color: #999; border-radius: 4px;">
+                    Toto je automaticky generovaná zpráva, prosíme, neodpovídejte na ni.
+                </div>
+            </div>
+        </div>
+    `;
+    return await sendEmail(env, email, name, subject, htmlContent);
+}
+
+// ============================================
+// Administrator cancellation confirmation
+// ============================================
+export async function sendAdminCancelEmail(env, orderId, name, email) {
+    const subject = `Zrušení rezervace #${orderId} | TJ Sokol Bohuňovice`;
+    const htmlContent = `
+        <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
+            <div style="background-color: #dc3545; color: #fff; padding: 20px; text-align: center;">
+                <h1 style="margin: 0; font-size: 24px;">Zrušení rezervace</h1>
+            </div>
+            <div style="padding: 30px;">
+                <p>Ahoj ${name},</p>
+                <p>informujeme tě, že tvá rezervace <strong>#${orderId} byla zrušena administrátorem</strong>.</p>
+                <hr style="border: none; border-top: 1px dashed #ccc; margin: 40px 0 20px 0;">
+                <div style="background-color: #f1f1f1; padding: 10px; text-align: center; font-size: 11px; color: #999; border-radius: 4px;">
+                    Toto je automaticky generovaná zpráva, prosíme, neodpovídejte na ni.
+                </div>
+            </div>
+        </div>
+    `;
     return await sendEmail(env, email, name, subject, htmlContent);
 }

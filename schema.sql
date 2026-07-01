@@ -19,6 +19,7 @@ CREATE TABLE orders (
     customer_email TEXT NOT NULL,
     customer_phone TEXT NOT NULL,
     status TEXT DEFAULT 'PENDING',
+    status_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     cancel_token TEXT NOT NULL,
     created_at DATETIME default CURRENT_TIMESTAMP
 );
