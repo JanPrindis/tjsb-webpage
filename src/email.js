@@ -36,6 +36,18 @@ export async function sendEmail(env, toEmail, toName, subject, htmlContent) {
     }
 }
 
+const socialContactHtml = `
+    <div style="margin-top: 30px; padding: 15px; background-color: #f8f9fa; border-radius: 6px; text-align: center; border: 1px solid #eee;">
+        <p style="margin: 0 0 8px 0; font-size: 14px; color: #111a3b;"><strong>Máš dotaz nebo potřebuješ s něčím poradit?</strong></p>
+        <p style="margin: 0; font-size: 14px; color: #555;">
+            Kdykoliv se nám ozvi do zpráv na 
+            <a href="https://www.instagram.com/bohunovice_fotbal/" style="color: #3498db; text-decoration: none; font-weight: bold;">Instagramu</a> 
+            nebo na 
+            <a href="https://www.facebook.com/TjSokolBohunovice/" style="color: #3498db; text-decoration: none; font-weight: bold;">Facebooku</a>.
+        </p>
+    </div>
+`;
+
 // ============================================
 // Order confirmation template
 // ============================================
@@ -62,25 +74,27 @@ export async function sendOrderConfirmation(env, orderId, name, email, phone, it
                 
                 <div style="background-color: #f9f9f9; padding: 15px; border-left: 4px solid #3498db; margin: 25px 0;">
                     <strong style="display: block; margin-bottom: 5px;">Jak to bude probíhat dál?</strong>
-                    Jakmile pro tebe věci nachystáme, dáme ti vědět e-mailem nebo na tvůj telefon. <strong>Vyzvednutí pak probíhá vždy osobně u nás na hřišti.</strong>
+                    Jakmile pro tebe věci nachystáme, dáme ti vědět e-mailem nebo na tvůj telefon. <strong>Vyzvednutí a platba pak probíhá vždy osobně <a href="https://maps.app.goo.gl/NobZxh7FnxWYCYfz9" target="_blank" style="color: #3498db; text-decoration: underline;">u nás na hřišti</a>.</strong>                
                 </div>
 
-                <h3 style="border-bottom: 2px solid #111a3b; padding-bottom: 5px; color: #111a3b;">Tvoje údaje</h3>
+                <h3 style="border-bottom: 2px solid #054a88; padding-bottom: 5px; color: #054a88;">Tvoje údaje</h3>
                 <p style="margin: 5px 0;"><strong>Jméno:</strong> ${name}</p>
                 <p style="margin: 5px 0;"><strong>Telefon:</strong> ${phone}</p>
 
-                <h3 style="border-bottom: 2px solid #111a3b; padding-bottom: 5px; margin-top: 30px; color: #111a3b;">Shrnutí rezervace</h3>
+                <h3 style="border-bottom: 2px solid #054a88; padding-bottom: 5px; margin-top: 30px; color: #054a88;">Shrnutí rezervace</h3>
                 <ul style="list-style-type: none; padding: 0; margin: 0;">
                     ${itemsListHtml}
                 </ul>
-                <div style="text-align: right; font-size: 1.3em; margin-top: 20px; color: #111a3b;">
+                <div style="text-align: right; font-size: 1.3em; margin-top: 20px; color: #054a88;">
                     <strong>Celkem k úhradě: ${totalPrice} Kč</strong>
                 </div>
+                
+                ${socialContactHtml}
 
                 <hr style="border: none; border-top: 1px dashed #ccc; margin: 40px 0 20px 0;">
                 <p style="font-size: 12px; color: #888; text-align: center; margin: 0;">
                     Změnily se ti plány? Svou rezervaci můžeš stornovat kliknutím na odkaz níže:<br>
-                    <a href="${cancelLink}" style="color: #dc3545; font-weight: bold; display: inline-block; margin-top: 10px;">Zrušit rezervaci</a>
+                    <a href="${cancelLink}" style="color: #dc3545; font-weight: bold; display: inline-block; margin-top: 10px; margin-bottom: 10px;">Zrušit rezervaci</a>
                 </p>
                 <div style="background-color: #f1f1f1; padding: 10px; text-align: center; font-size: 11px; color: #999; border-radius: 4px;">
                     Toto je automaticky generovaná zpráva, prosíme, neodpovídejte na ni. V případě dotazů se nám ozvěte na naše oficiální kontakty.
@@ -108,6 +122,9 @@ export async function sendUncollectedEmail(env, orderId, name, email) {
                 <p>tvá objednávka na tebe čekala připravená více než týden.</p>
                 <p>Jelikož sis ji nevyzvedl(a), náš systém ji <strong>automaticky stornoval</strong> a zboží bylo vráceno zpět do prodeje pro ostatní fanoušky.</p>
                 <p>Pokud o věci máš stále zájem, budeme rádi, když si vytvoříš na e-shopu novou rezervaci.</p>
+                
+                ${socialContactHtml}
+                
                 <hr style="border: none; border-top: 1px dashed #ccc; margin: 40px 0 20px 0;">
                 <div style="background-color: #f1f1f1; padding: 10px; text-align: center; font-size: 11px; color: #999; border-radius: 4px;">
                     Toto je automaticky generovaná zpráva, prosíme, neodpovídejte na ni.
@@ -133,6 +150,9 @@ export async function sendCustomerCancelEmail(env, orderId, name, email) {
                 <p>Ahoj ${name},</p>
                 <p>potvrzujeme, že jsme na tvou žádost <strong>stornovali rezervaci #${orderId}</strong>.</p>
                 <p>Zboží jsme uvolnili zpět do prodeje. Kdybys v budoucnu potřeboval(a) cokoliv dalšího, náš e-shop je ti vždy k dispozici.</p>
+                
+                ${socialContactHtml}
+                
                 <hr style="border: none; border-top: 1px dashed #ccc; margin: 40px 0 20px 0;">
                 <div style="background-color: #f1f1f1; padding: 10px; text-align: center; font-size: 11px; color: #999; border-radius: 4px;">
                     Toto je automaticky generovaná zpráva, prosíme, neodpovídejte na ni.
@@ -156,6 +176,9 @@ export async function sendAdminCancelEmail(env, orderId, name, email) {
             <div style="padding: 30px;">
                 <p>Ahoj ${name},</p>
                 <p>informujeme tě, že tvá rezervace <strong>#${orderId} byla zrušena administrátorem</strong>.</p>
+                
+                ${socialContactHtml}
+                
                 <hr style="border: none; border-top: 1px dashed #ccc; margin: 40px 0 20px 0;">
                 <div style="background-color: #f1f1f1; padding: 10px; text-align: center; font-size: 11px; color: #999; border-radius: 4px;">
                     Toto je automaticky generovaná zpráva, prosíme, neodpovídejte na ni.
