@@ -17,13 +17,9 @@
 
 .size-content {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: 3fr 1fr;
     gap: 2.5rem;
-    align-items: center;
-}
-
-.size-image-wrapper {
-    order: -1;
+    align-items: start;
 }
 
 .size-table-wrapper table {
@@ -71,4 +67,11 @@
     height: auto;
     border-radius: 8px;
     border: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: white;
+}
+
+@media (max-width: 768px) {
+    .size-content {
+        grid-template-columns: 1fr;
+    }
 }
