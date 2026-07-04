@@ -2,6 +2,28 @@ import { getCart, removeFromCart, updateCartCount, clearCart } from './cartManag
 import { showToast } from './toast.js';
 import { sanitize } from "./sanitize.js";
 
+let turnstileToken = '';
+
+window.turnstileSuccess = function(token) {
+    turnstileToken = token;
+    const btn = document.getElementById('submitOrderBtn');
+
+    // Unlock the button
+    btn.disabled = false;
+    btn.style.opacity = 1;
+    btn.style.cursor = 'pointer';
+};
+
+window.turnstileExpired = function() {
+    turnstileToken = '';
+    const btn = document.getElementById('submitOrderBtn');
+
+    // Re-lock the button
+    btn.disabled = true;
+    btn.style.opacity = 0.5;
+    btn.style.cursor = 'not-allowed';
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     updateCartCount();
     renderCartPage();

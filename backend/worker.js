@@ -425,61 +425,75 @@ export default {
         console.log("[CRON] Running database cleanup...");
 
         try {
-            // Cancel stale orders
+            // Cancel stale orders that have been ready for over a week
             const { results: staleOrders } = await env.DB.prepare(`
                 SELECT id, customer_name, customer_email 
                 FROM orders 
-                WHERE status = 'READY' 
+                WHERE status = ? 
                 AND status_updated_at <= datetime('now', '-7 days')
-            `).all();
+            `).bind(OrderStatus.READY).all();
 
-            for (const order of staleOrders) {
-                // Set order state to CANCELED_UNCOLLECTED
-                await env.DB.prepare(`
-                    UPDATE orders 
-                    SET status = 'CANCELED_UNCOLLECTED', status_updated_at = CURRENT_TIMESTAMP 
-                    WHERE id = ?
-                `).bind(order.id).run();
-
-                await env.DB.prepare(`
-                    INSERT INTO audit_logs (admin_email, action, entity, entity_id, details) 
-                    VALUES (?, ?, ?, ?, ?)
-                `).bind('system@cron', 'AUTO_CANCEL', 'ORDER', order.id, JSON.stringify({ reason: 'Nevyzvednuto' })).run();
-
-                // Inform client about cancellation
-                ctx.waitUntil(sendUncollectedEmail(env, order.id, order.customer_name, order.customer_email));
-            }
             if (staleOrders.length > 0) {
-                console.log(`[CRON] Auto canceled ${staleOrders.length} stale orders.`);
+                const cancellationStatements = [];
+                for (const order of staleOrders) {
+                    // Prepare the UPDATE statement for the order
+                    cancellationStatements.push(
+                        env.DB.prepare(`
+                            UPDATE orders 
+                            SET status = ?, status_updated_at = CURRENT_TIMESTAMP 
+                            WHERE id = ?
+                        `).bind(OrderStatus.CANCELED_UNCOLLECTED, order.id)
+                    );
+
+                    // Prepare the INSERT statement for the audit log
+                    cancellationStatements.push(
+                        env.DB.prepare(`
+                            INSERT INTO audit_logs (admin_email, action, entity, entity_id, details) 
+                            VALUES (?, ?, ?, ?, ?)
+                        `).bind('system@cron', 'AUTO_CANCEL', 'ORDER', order.id, JSON.stringify({ reason: 'Nevyzvednuto' }))
+                    );
+
+                    // Queue the email to be sent only after the transaction succeeds
+                    ctx.waitUntil(sendUncollectedEmail(env, order.id, order.customer_name, order.customer_email));
+                }
+
+                await env.DB.batch(cancellationStatements);
+                console.log(`[CRON] Auto-canceled ${staleOrders.length} stale orders.`);
             }
 
-            // Delete old orders and audit logs
-            const ordersResult = await env.DB.prepare(`
-                DELETE FROM orders 
-                WHERE status_updated_at <= datetime('now', '-2 month') 
-                AND status IN ('COMPLETED', 'CANCELED', 'CANCELED_BY_USER', 'CANCELED_UNCOLLECTED')
-            `).run();
+            // Delete orders older than 2 months that are in a final state
+            const cleanupStatements = [
+                env.DB.prepare(`
+                    DELETE FROM orders 
+                    WHERE status_updated_at <= datetime('now', '-2 month') 
+                    AND status IN (?, ?, ?, ?)
+                `).bind(
+                    OrderStatus.COMPLETED,
+                    OrderStatus.CANCELED,
+                    OrderStatus.CANCELED_BY_USER,
+                    OrderStatus.CANCELED_UNCOLLECTED
+                ),
+                // Delete audit logs older than 14 days
+                env.DB.prepare(`
+                    DELETE FROM audit_logs 
+                    WHERE created_at <= datetime('now', '-14 days')
+                `)
+            ];
 
-            // Delete week old logs
-            const logsResult = await env.DB.prepare(`
-                DELETE FROM audit_logs 
-                WHERE created_at <= datetime('now', '-14 days')
-            `).run();
+            const [ordersResult, logsResult] = await env.DB.batch(cleanupStatements);
 
-            // Log cleanup
+            // Log the cleanup action
             const details = JSON.stringify({
-                deleted_orders: ordersResult.meta.changes,
-                deleted_logs: logsResult.meta.changes
+                deleted_orders: ordersResult.results.length,
+                deleted_logs: logsResult.results.length
             });
 
-            await env.DB.prepare(`
-                INSERT INTO audit_logs (admin_email, action, entity, details) 
-                VALUES (?, ?, ?, ?)
-            `).bind('system@cron', 'SYSTEM_CLEANUP', 'DATABASE', details).run();
+            await logAction(env.DB, 'system@cron', 'SYSTEM_CLEANUP', 'DATABASE', null, details);
 
-            console.log(`[CRON SUCCESS] Cleanup completed. Removed: ${ordersResult.meta.changes} old orders, removed: ${logsResult.meta.changes} old logs`);
+            console.log(`[CRON SUCCESS] Cleanup completed. Removed: ${ordersResult.results.length} old orders, removed: ${logsResult.results.length} old logs`);
+
         } catch (e) {
-            console.error("[CRON ERROR] Error during cleanup:", e);
+            console.error("[CRON ERROR] Error during scheduled cleanup:", e);
         }
     }
 };
