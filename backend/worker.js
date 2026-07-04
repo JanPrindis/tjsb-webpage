@@ -263,15 +263,33 @@ const requireAccessAuth = async (c, next) => {
     }
 
     // Production - Cloudflare Access
-    const email = c.req.header('CF-Access-Authenticated-User-Email')
     const jwt = c.req.header('CF-Access-Jwt-Assertion')
 
-    if (!email || !jwt) {
-        return c.json({ error: 'Unauthorized.' }, 403)
+    if (!jwt) {
+        console.error('Missing CF-Access-Jwt-Assertion header. Ensure Access policy is applied to this route.');
+        return c.json({ error: 'Chyba konfigurace serveru.' }, 500);
     }
 
-    c.set('adminEmail', email)
-    await next()
+    try {
+        const JWKS = createRemoteJWKSet(
+            new URL(`${c.env.TEAM_DOMAIN}/cdn-cgi/access/certs`),
+        );
+
+        const { payload } = await jwtVerify(jwt, JWKS, {
+            issuer: c.env.TEAM_DOMAIN,
+            audience: c.env.POLICY_AUD,
+        });
+
+        if (!payload.email) {
+            return c.json({ error: 'Unauthorized: Token neobsahuje e-mail.' }, 403);
+        }
+        c.set('adminEmail', payload.email);
+        await next()
+    }
+    catch (error) {
+        console.error("JWT Validation Error:", error.message);
+        return c.json({ error: 'Unauthorized: Neplatný nebo podvržený token.' }, 403)
+    }
 }
 
 // Apply middleware to all routes under /admin/api/
