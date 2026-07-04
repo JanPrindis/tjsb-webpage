@@ -1,7 +1,32 @@
 import { Hono } from 'hono'
+import { cors } from 'hono/cors'
+import { jwtVerify, createRemoteJWKSet } from 'jose'
 import { sendOrderConfirmation, sendUncollectedEmail, sendCustomerCancelEmail, sendAdminCancelEmail } from "../src/email.js";
 
 const app = new Hono()
+
+// ============================================
+// CORS setup
+// ============================================
+app.use('/*', cors({
+    origin: (origin) => {
+        const allowedOrigins = [
+            'https://www.tjsbfotbal.cz',
+            'https://eshop.tjsbfotbal.cz',
+            'http://localhost:8787',
+            'http://localhost:3000'
+        ];
+
+        if (allowedOrigins.includes(origin)) {
+            return origin;
+        }
+
+        return 'https://www.tjsbfotbal.cz';
+    },
+    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowHeaders: ['Content-Type', 'Authorization'],
+    maxAge: 86400,
+}))
 
 // ============================================
 // Audit log helper
