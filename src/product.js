@@ -1,5 +1,6 @@
 import { addToCart, updateCartCount } from './cartManager.js';
 import { showToast } from './toast.js';
+import { sanitize } from './sanitize.js';
 
 const placeholderSvg = '/src/assets/camera.svg';
 
@@ -44,7 +45,7 @@ function renderDetail(product, container) {
     let sizeHTML = '';
 
     // Title
-    document.title = `${product.name} | TJ Sokol Bohuňovice`;
+    document.title = `${sanitize(product.name)} | TJ Sokol Bohuňovice`;
 
     let allImages = [];
     if (product.image_url) allImages.push(product.image_url);
@@ -56,14 +57,14 @@ function renderDetail(product, container) {
     if (allImages.length === 0) {
         imagesHTML = `<img src="${placeholderSvg}" alt="Bez obrázku" class="single-product-img">`;
     } else if (allImages.length === 1) {
-        imagesHTML = `<img src="${allImages[0]}" alt="${product.name}" class="single-product-img" onerror="this.onerror=null;this.src='${placeholderSvg}';">`;
+        imagesHTML = `<img src="${allImages[0]}" alt="${sanitize(product.name)}" class="single-product-img" onerror="this.onerror=null;this.src='${placeholderSvg}';">`;
     } else {
         imagesHTML = `
             <div class="swiper mySwiper">
                 <div class="swiper-wrapper">
                     ${allImages.map(imgSrc => `
                         <div class="swiper-slide">
-                            <img src="${imgSrc}" alt="${product.name}" onerror="this.onerror=null;this.src='${placeholderSvg}';">
+                            <img src="${imgSrc}" alt="${sanitize(product.name)}" onerror="this.onerror=null;this.src='${placeholderSvg}';">
                         </div>
                     `).join('')}
                 </div>
@@ -94,9 +95,9 @@ function renderDetail(product, container) {
             ${imagesHTML}
         </div>
         <div class="product-detail-info-zone">
-            <h1 class="detail-name">${product.name}</h1>
+            <h1 class="detail-name">${sanitize(product.name)}</h1>
             <div class="detail-price">${product.price} Kč</div>
-            <p class="detail-description">${product.description || 'K tomuto produktu zatím nebyl přidán žádný popis.'}</p>
+            <p class="detail-description">${sanitize(product.description) || 'K tomuto produktu zatím nebyl přidán žádný popis.'}</p>
             
             ${sizeHTML}
             

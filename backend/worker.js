@@ -53,6 +53,10 @@ app.post('/api/orders', async (c) => {
     }
 
     // Backend validation
+    if (customer_name.length > 100 || customer_email.length > 100 || customer_phone.length > 20) {
+        return c.json({ error: 'Některý z údajů je příliš dlouhý.' }, 400)
+    }
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(customer_email)) {
         return c.json({ error: 'Neplatný formát e-mailu' }, 400)
@@ -79,13 +83,20 @@ app.post('/api/orders', async (c) => {
         return c.json({ error: 'Některé produkty v košíku již neexistují. Zkuste prosím obnovit stránku.' }, 400);
     }
 
+    // Check if the product quantities are valid
+    for (const item of items) {
+        if (!Number.isInteger(item.quantity) || item.quantity <= 0) {
+            return c.json({ error: 'Neplatné množství u produktu.' }, 400)
+        }
+    }
+
     // Generate cancellation token
     const cancelToken = crypto.randomUUID()
 
     // Safe write to db
     const orderResult = await c.env.DB.prepare(
         'INSERT INTO orders (customer_name, customer_email, customer_phone, status, cancel_token) VALUES (?, ?, ?, ?, ?)'
-    ).bind(customer_name, customer_email, customer_phone.replace(/\s/g, ''), 'PENDING', cancelToken).run()
+    ).bind(customer_name, customer_email, customer_phone.replace(/\s/g, ''), OrderStatus.PENDING, cancelToken).run()
 
     const orderId = orderResult.meta.last_row_id
 
@@ -146,17 +157,17 @@ app.get('/api/cancel', async (c) => {
         return c.html('<div style="font-family: sans-serif; text-align: center; margin-top: 50px;"><h1 style="color: #dc3545;">Přístup odepřen</h1><p>Tento odkaz není platný pro zrušení dané objednávky.</p></div>', 403)
     }
 
-    if (order.status === 'CANCELED' || order.status === 'CANCELED_BY_USER') {
+    if (order.status === OrderStatus.CANCELED || order.status === OrderStatus.CANCELED_BY_USER) {
         return c.html('<div style="font-family: sans-serif; text-align: center; margin-top: 50px;"><h1>Již zrušeno</h1><p>Tato rezervace již byla stornována dříve.</p></div>')
     }
 
-    if (order.status !== 'PENDING') {
+    if (order.status !== OrderStatus.PENDING) {
         return c.html('<div style="font-family: sans-serif; text-align: center; margin-top: 50px;"><h1>Nelze zrušit</h1><p>Tuto objednávku již nelze automaticky stornovat. Pravděpodobně se již připravuje, nebo byla vyřízena. Kontaktujte nás prosím přímo.</p></div>', 400)
     }
 
     await c.env.DB.prepare(
         'UPDATE orders SET status = ?, status_updated_at = CURRENT_TIMESTAMP WHERE id = ?'
-    ).bind('CANCELED_BY_USER', id).run()
+    ).bind(OrderStatus.CANCELED_BY_USER, id).run()
 
     c.executionCtx.waitUntil(
         sendCustomerCancelEmail(c.env, id, order.customer_name, order.customer_email)
@@ -256,6 +267,17 @@ app.get('/assets/*', async (c) => {
 app.post('/admin/api/products', async (c) => {
     const { name, price, description, image_url, gallery_urls, sizes } = await c.req.json()
     const adminEmail = c.get('adminEmail')
+
+    if (!name || typeof name !== 'string' || name.length > 150) {
+        return c.json({ error: 'Neplatný název produktu.' }, 400)
+    }
+    if (!price || typeof price !== 'number' || price < 0) {
+        return c.json({ error: 'Neplatná cena produktu.' }, 400)
+    }
+
+    if ((description && description.length > 2000) || (sizes && sizes.length > 100)) {
+        return c.json({ error: 'Překročena maximální délka textu.' }, 400)
+    }
 
     const result = await c.env.DB.prepare(
         'INSERT INTO products (name, price, description, image_url, gallery_urls, sizes) VALUES (?, ?, ?, ?, ?, ?)'
@@ -363,14 +385,14 @@ app.put('/admin/api/orders/:id/status', async (c) => {
         return c.json({ error: 'Objednávka nenalezena.' }, 404)
     }
 
-    if (currentOrder.status === 'CANCELED_BY_USER' || currentOrder.status === 'CANCELED_UNCOLLECTED') {
+    if (currentOrder.status === OrderStatus.CANCELED_BY_USER || currentOrder.status === OrderStatus.CANCELED_UNCOLLECTED) {
         return c.json({ error: 'Objednávku nelze změnit, protože již byla stornována zákazníkem, nebo nevyzvednuta.' }, 409)
     }
 
     await c.env.DB.prepare('UPDATE orders SET status = ?, status_updated_at = CURRENT_TIMESTAMP WHERE id = ?').bind(status, id).run()
     await logAction(c.env.DB, adminEmail, 'STATUS_CHANGE', 'ORDER', id, { novy_status: status })
 
-    if (status === 'CANCELED') {
+    if (status === OrderStatus.CANCELED) {
         c.executionCtx.waitUntil(
             sendAdminCancelEmail(c.env, id, currentOrder.customer_name, currentOrder.customer_email)
         )

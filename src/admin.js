@@ -1,4 +1,6 @@
 import { showToast } from './toast.js';
+import { sanitize } from './sanitize.js';
+import { OrderStatus } from "./constants.js";
 
 document.addEventListener('DOMContentLoaded', () => {
     initTabs();
@@ -39,22 +41,13 @@ function initTabs() {
 // ============================================
 // ORDERS
 // ============================================
-const STATUS_DICT = {
-    'PENDING': 'NOVÁ',
-    'READY': 'PŘIPRAVENA',
-    'COMPLETED': 'VYZVEDNUTO',
-    'CANCELED': 'STORNOVANÁ',
-    'CANCELED_BY_USER': 'STORNOVANÁ ZÁKAZNÍKEM',
-    'CANCELED_UNCOLLECTED': 'STORNOVANÁ NEVYZVEDNUTO'
-};
-
-const STATUS_COLORS = {
-    'PENDING': 'badge-new',
-    'READY': 'badge-ready',
-    'COMPLETED': 'badge-done',
-    'CANCELED': 'badge-cancel',
-    'CANCELED_BY_USER': 'badge-cancel',
-    'CANCELED_UNCOLLECTED': 'badge-cancel'
+const STATUS_CONFIG = {
+    [OrderStatus.PENDING]: { text: 'NOVÁ', className: 'badge-new' },
+    [OrderStatus.READY]: { text: 'PŘIPRAVENA', className: 'badge-ready' },
+    [OrderStatus.COMPLETED]: { text: 'VYZVEDNUTO', className: 'badge-done' },
+    [OrderStatus.CANCELED]: { text: 'STORNOVANÁ', className: 'badge-cancel' },
+    [OrderStatus.CANCELED_BY_USER]: { text: 'STORNOVANÁ ZÁKAZNÍKEM', className: 'badge-cancel' },
+    [OrderStatus.CANCELED_UNCOLLECTED]: { text: 'STORNOVANÁ (NEVYZVEDNUTO)', className: 'badge-cancel' },
 };
 
 let currentOrders = [];
@@ -128,14 +121,15 @@ function renderOrders() {
 
     filteredOrders.forEach(o => {
         const date = new Date(o.created_at).toLocaleString('cs-CZ');
-        const dbStatus = (o.status || 'PENDING').toUpperCase();
-        const czStatus = STATUS_DICT[dbStatus] || dbStatus;
-        const badgeClass = STATUS_COLORS[dbStatus] || 'badge-new';
+
+        const statusInfo = STATUS_CONFIG[o.status] || { text: o.status, className: 'badge-new' };
+        const czStatus = statusInfo.text;
+        const badgeClass = statusInfo.className;
 
         html += `
             <tr>
                 <td>#${o.id}</td>
-                <td><strong>${o.customer_name}</strong><br><small>${o.customer_email}</small></td>
+                <td><strong>${sanitize(o.customer_name)}</strong><br><small>${sanitize(o.customer_email)}</small></td>
                 <td><span class="status-badge ${badgeClass}">${czStatus}</span></td>
                 <td>${date}</td>
                 <td><button class="btn-action-primary btn-sm" onclick="openOrderModal(${o.id})">Detail</button></td>
@@ -168,9 +162,9 @@ window.openOrderModal = async (id) => {
         // Customer info header
         let html = `
             <div class="modal-customer-info">
-                <div class="info-row"><span>Zákazník:</span> <strong>${order.customer_name}</strong></div>
-                <div class="info-row"><span>E-mail:</span> <a href="mailto:${order.customer_email}">${order.customer_email}</a></div>
-                <div class="info-row"><span>Telefon:</span> <a href="tel:${order.customer_phone}">${order.customer_phone}</a></div>
+                <div class="info-row"><span>Zákazník:</span> <strong>${sanitize(order.customer_name)}</strong></div>
+                <div class="info-row"><span>E-mail:</span> <a href="mailto:${sanitize(order.customer_email)}">${sanitize(order.customer_email)}</a></div>
+                <div class="info-row"><span>Telefon:</span> <a href="tel:${sanitize(order.customer_phone)}">${sanitize(order.customer_phone)}</a></div>
             </div>
         `;
 
@@ -187,7 +181,7 @@ window.openOrderModal = async (id) => {
                     <li>
                         <div class="item-main">
                             <span class="item-qty">${i.quantity}x</span>
-                            <span class="item-name">${i.product_name} ${i.size ? `<span style="display:block; font-size: 0.85rem; color: rgba(255,255,255,0.5); margin-top: 0.2rem;">Velikost: ${i.size}</span>` : ''}</span>
+                            <span class="item-name">${sanitize(i.product_name)} ${i.size ? `<span style="display:block; font-size: 0.85rem; color: rgba(255,255,255,0.5); margin-top: 0.2rem;">Velikost: ${sanitize(i.size)}</span>` : ''}</span>
                         </div>
                         <div class="item-price">${itemTotal} Kč</div>
                     </li>
@@ -200,17 +194,17 @@ window.openOrderModal = async (id) => {
         // State change buttons
         let actionButtons = '';
 
-        if (dbStatus === 'PENDING') {
-            actionButtons += `<button class="btn-action-primary modal-btn" onclick="changeOrderStatus(${id}, 'READY')" style="background-color: #3498db; color: white;">Označit jako připravené</button>`;
-            actionButtons += `<button class="btn-action-danger modal-btn" onclick="changeOrderStatus(${id}, 'CANCELED')">Stornovat</button>`;
+        if (dbStatus === OrderStatus.PENDING) {
+            actionButtons += `<button class="btn-action-primary modal-btn" onclick="changeOrderStatus(${id}, '${OrderStatus.READY}')" style="background-color: #3498db; color: white;">Označit jako připravené</button>`;
+            actionButtons += `<button class="btn-action-danger modal-btn" onclick="changeOrderStatus(${id}, '${OrderStatus.CANCELED}')">Stornovat</button>`;
         }
-        else if (dbStatus === 'READY') {
-            actionButtons += `<button class="btn-action-success modal-btn" onclick="changeOrderStatus(${id}, 'COMPLETED')">Vyzvednuto</button>`;
-            actionButtons += `<button class="btn-action-secondary modal-btn" onclick="changeOrderStatus(${id}, 'PENDING')">Zpět na "Nová"</button>`;
-            actionButtons += `<button class="btn-action-danger modal-btn" onclick="changeOrderStatus(${id}, 'CANCELED')">Stornovat</button>`;
+        else if (dbStatus === OrderStatus.READY) {
+            actionButtons += `<button class="btn-action-success modal-btn" onclick="changeOrderStatus(${id}, '${OrderStatus.COMPLETED}')">Vyzvednuto</button>`;
+            actionButtons += `<button class="btn-action-secondary modal-btn" onclick="changeOrderStatus(${id}, '${OrderStatus.PENDING}')">Zpět na "Nová"</button>`;
+            actionButtons += `<button class="btn-action-danger modal-btn" onclick="changeOrderStatus(${id}, '${OrderStatus.CANCELED}')">Stornovat</button>`;
         }
-        else if (dbStatus === 'COMPLETED' || dbStatus === 'CANCELED') {
-            actionButtons += `<button class="btn-action-secondary modal-btn" onclick="changeOrderStatus(${id}, 'PENDING')">Vrátit zpět na "Nová"</button>`;
+        else if (dbStatus === OrderStatus.COMPLETED || dbStatus === OrderStatus.CANCELED) {
+            actionButtons += `<button class="btn-action-secondary modal-btn" onclick="changeOrderStatus(${id}, '${OrderStatus.PENDING}')">Vrátit zpět na "Nová"</button>`;
         }
 
         actions.innerHTML = actionButtons;
@@ -284,10 +278,10 @@ async function loadProducts() {
             html += `
                 <div class="admin-item-row" onclick="editProduct(${p.id})">
                     <div class="admin-item-img">
-                        <img src="${imageSrc}" alt="${p.name}" onerror="this.onerror=null;this.src='${placeholderSvg}';">
+                        <img src="${imageSrc}" alt="${sanitize(p.name)}" onerror="this.onerror=null;this.src='${placeholderSvg}';">
                     </div>
                     <div class="admin-item-info">
-                        <strong>${p.name}</strong>
+                        <strong>${sanitize(p.name)}</strong>
                         <span>${p.price} Kč</span>
                     </div>
                     <button class="btn-action-secondary btn-sm">✏️ Upravit</button>
@@ -458,10 +452,10 @@ async function loadAudit() {
             html += `
                 <tr>
                     <td style="white-space: nowrap;">${date}</td>
-                    <td>${l.admin_email}</td>
-                    <td><strong style="color: var(--yellow);">${l.action}</strong></td>
-                    <td>${l.entity} #${l.entity_id || ''}</td>
-                    <td style="color: #aaa;">${l.details}</td>
+                    <td>${sanitize(l.admin_email)}</td>
+                    <td><strong style="color: var(--yellow);">${sanitize(l.action)}</strong></td>
+                    <td>${sanitize(l.entity)} #${l.entity_id || ''}</td>
+                    <td style="color: #aaa;">${sanitize(l.details)}</td>
                 </tr>
             `;
         });

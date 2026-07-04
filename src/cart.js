@@ -1,5 +1,6 @@
 import { getCart, removeFromCart, updateCartCount, clearCart } from './cartManager.js';
 import { showToast } from './toast.js';
+import { sanitize } from "./sanitize.js";
 
 document.addEventListener('DOMContentLoaded', () => {
     updateCartCount();
@@ -37,14 +38,14 @@ function renderCartPage() {
         rowsHTML += `
             <div class="cart-row">
                 <div class="cart-row-main">
-                    <span class="cart-item-name">${item.name}</span>
-                    ${item.size ? `<span class="cart-item-size">Velikost: <strong>${item.size}</strong></span>` : ''}
+                    <span class="cart-item-name">${sanitize(item.name)}</span>
+                    ${item.size ? `<span class="cart-item-size">Velikost: <strong>${sanitize(item.size)}</strong></span>` : ''}
                 </div>
                 <div class="cart-row-details">
                     <span>${item.quantity}x</span>
                     <span>${item.price} Kč</span>
                     <span class="cart-item-subtotal">${itemTotal} Kč</span>
-                    <button class="btn-delete-item" data-id="${item.id}" data-size="${item.size || ''}">✕</button>
+                    <button class="btn-delete-item" data-id="${item.id}" data-size="${sanitize(item.size || '')}">✕</button>
                 </div>
             </div>
         `;

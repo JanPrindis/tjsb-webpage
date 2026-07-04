@@ -72,7 +72,7 @@
 
                     <div class="form-group">
                         <label for="prod-name">Název produktu *</label>
-                        <input type="text" id="prod-name" class="eshop-input" required>
+                        <input type="text" id="prod-name" class="eshop-input" maxlength="150" required>
                     </div>
                     <div class="form-group">
                         <label for="prod-price">Cena (Kč) *</label>
@@ -80,11 +80,11 @@
                     </div>
                     <div class="form-group">
                         <label for="prod-sizes">Velikosti (oddělené čárkou)</label>
-                        <input type="text" id="prod-sizes" class="eshop-input" placeholder="S, M, L">
+                        <input type="text" id="prod-sizes" class="eshop-input" placeholder="S, M, L" maxlength="100">
                     </div>
                     <div class="form-group">
                         <label for="prod-desc">Popis</label>
-                        <textarea id="prod-desc" class="eshop-input" rows="4"></textarea>
+                        <textarea id="prod-desc" class="eshop-input" rows="4" maxlength="2000"></textarea>
                     </div>
                     <div class="form-group">
                         <label for="prod-image">Hlavní (Cover) fotka</label>

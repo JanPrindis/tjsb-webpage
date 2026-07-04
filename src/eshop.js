@@ -1,4 +1,5 @@
 import { getCart } from './cartManager.js';
+import { sanitize } from "./sanitize.js";
 
 document.addEventListener('DOMContentLoaded', () => {
     loadProducts();
@@ -40,9 +41,9 @@ async function loadProducts() {
                 <div class="product-card">
                     <a href="/product.html?id=${product.id}">
                         <div class="product-image-wrapper">
-                            <img src="${imageSrc}" alt="${product.name}" onerror="this.onerror=null;this.src='${placeholderSvg}';">
+                            <img src="${imageSrc}" alt="${sanitize(product.name)}" onerror="this.onerror=null;this.src='${placeholderSvg}';">
                         </div>
-                        <h3>${product.name}</h3>
+                        <h3>${sanitize(product.name)}</h3>
                         <p class="product-price">${product.price} Kč</p>
                     </a>
                 </div>
