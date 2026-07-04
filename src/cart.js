@@ -138,6 +138,7 @@ async function handleCheckoutSubmit(e) {
         customer_email: document.getElementById('cust-email').value,
         customer_phone: document.getElementById('cust-phone').value,
         items: cart,
+        turnstileToken: turnstileToken,
         honeypot: honeypotInput ? honeypotInput.value : ''
     };
 

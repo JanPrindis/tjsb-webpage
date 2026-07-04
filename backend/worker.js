@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { jwtVerify, createRemoteJWKSet } from 'jose'
 import { sendOrderConfirmation, sendUncollectedEmail, sendCustomerCancelEmail, sendAdminCancelEmail } from "../src/email.js";
+import { OrderStatus } from "../src/constants.js";
 
 const app = new Hono()
 
@@ -42,6 +43,33 @@ async function logAction(db, email, action, entity, entityId, details) {
 }
 
 // ============================================
+// Cloudflare Turnstile helper
+// ============================================
+async function validateTurnstile(token, secret, connectingIp) {
+    try {
+        const response = await fetch(
+            "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    secret: secret,
+                    response: token,
+                    remoteip: connectingIp,
+                }),
+            },
+        );
+
+        return await response.json();
+    } catch (error) {
+        console.error("Turnstile validation error:", error);
+        return { success: false, "error-codes": ["internal-error"] };
+    }
+}
+
+// ============================================
 // PUBLIC ROUTES (E-shop & Cart)
 // ============================================
 
@@ -62,10 +90,26 @@ app.get('/api/products/:id', async (c) => {
 
 // Create new order
 app.post('/api/orders', async (c) => {
-    const { customer_name, customer_email, customer_phone, items, honeypot } = await c.req.json()
+    const { customer_name, customer_email, customer_phone, items, turnstileToken, honeypot } = await c.req.json()
 
     if (honeypot) {
         return c.json({ error: 'Spam detekován' }, 400)
+    }
+
+    // Turnstile validation
+    if (!turnstileToken) {
+        return c.json({ error: 'Prosím, prokažte, že nejste robot.' }, 400)
+    }
+
+    const turnstileResult = await validateTurnstile(
+        turnstileToken,
+        c.env.TURNSTILE_TOKEN,
+        c.req.header(`cf-connecting-ip`)
+    );
+
+    if (!turnstileResult.success) {
+        console.error(`Turnstile fail:`, turnstileResult['error-codes']);
+        return c.json({ error: 'Bezpečnostní ověření selhalo. Obnovte prosím stránku a zkuste to znovu.' }, 400);
     }
 
     // Frontend validation
