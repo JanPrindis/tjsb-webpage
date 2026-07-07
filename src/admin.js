@@ -2,6 +2,23 @@ import { showToast } from './toast.js';
 import { sanitize } from './sanitize.js';
 import { OrderStatus } from "./constants.js";
 
+async function apiFetch(url, options) {
+    const response = await fetch(url, options);
+
+    // If the session is expired or invalid, redirect to login
+    if (response.status === 401) {
+        showToast('Platnost relace vypršela', 'Budete přesměrováni na přihlašovací stránku.', 'error');
+
+        setTimeout(() => {
+            window.location.reload();
+        }, 1000);
+
+        throw new Error('Session expired');
+    }
+
+    return response;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     initTabs();
     initModals();
@@ -57,12 +74,14 @@ let searchQuery = '';
 async function loadOrders() {
     const container = document.getElementById('orders-list-container');
     try {
-        const res = await fetch('/admin/api/orders');
+        const res = await apiFetch('/admin/api/orders');
         if (!res.ok) throw new Error('Nepodařilo se načíst objednávky.');
         currentOrders = await res.json();
         renderOrders();
     } catch (e) {
-        container.innerHTML = `<p class="error-msg">Chyba při načítání: ${e.message}</p>`;
+        if (e.message !== 'Session expired') {
+            container.innerHTML = `<p class="error-msg">Chyba při načítání: ${e.message}</p>`;
+        }
     }
 }
 
@@ -155,7 +174,7 @@ window.openOrderModal = async (id) => {
     body.innerHTML = '<div class="loader">Načítám položky...</div>';
 
     try {
-        const res = await fetch(`/admin/api/orders/${id}/items`);
+        const res = await apiFetch(`/admin/api/orders/${id}/items`);
         if (!res.ok) throw new Error(`HTTP chyba: ${res.status}`);
         const items = await res.json();
 
@@ -209,7 +228,9 @@ window.openOrderModal = async (id) => {
 
         actions.innerHTML = actionButtons;
     } catch (e) {
-        body.innerHTML = `<p class="error-msg">Chyba při stahování detailů: ${e.message}</p>`;
+        if (e.message !== 'Session expired') {
+            body.innerHTML = `<p class="error-msg">Chyba při stahování detailů: ${e.message}</p>`;
+        }
     }
 }
 
@@ -217,7 +238,7 @@ window.changeOrderStatus = async (id, status) => {
     if (status === 'CANCELED' && !confirm('Opravdu stornovat objednávku?')) return;
 
     try {
-        const response = await fetch(`/admin/api/orders/${id}/status`, {
+        const response = await apiFetch(`/admin/api/orders/${id}/status`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ status })
@@ -236,13 +257,15 @@ window.changeOrderStatus = async (id, status) => {
         await loadAudit();
         showToast('Stav změněn', `Stav objednávky #${id} byl úspěšně aktualizován.`, 'success');
 
-    } catch (error) {
-        // Display the error message from the backend in a toast
-        showToast('Změna se nezdařila', error.message, 'error');
+    } catch (e) {
+        if (e.message !== 'Session expired') {
+            // Display the error message from the backend in a toast
+            showToast('Změna se nezdařila', e.message, 'error');
 
-        // Also refresh the data to show the admin the *actual* current state
-        document.getElementById('order-modal').style.display = 'none';
-        await loadOrders();
+            // Also refresh the data to show the admin the *actual* current state
+            document.getElementById('order-modal').style.display = 'none';
+            await loadOrders();
+        }
     }
 }
 
@@ -262,7 +285,7 @@ async function loadProducts() {
     const placeholderSvg = '/src/assets/camera.svg';
 
     try {
-        const res = await fetch('/api/products');
+        const res = await apiFetch('/api/products');
         currentProducts = await res.json();
 
         if (currentProducts.length === 0) {
@@ -290,7 +313,9 @@ async function loadProducts() {
         });
         container.innerHTML = html;
     } catch (e) {
-        container.innerHTML = '<p class="error-msg">Chyba při načítání produktů.</p>';
+        if (e.message !== 'Session expired') {
+            container.innerHTML = '<p class="error-msg">Chyba při načítání produktů.</p>';
+        }
     }
 }
 
@@ -357,7 +382,7 @@ async function handleProductSave(e) {
             status.textContent = 'Nahrávám hlavní obrázek...';
             const formData = new FormData();
             formData.append('image', imageFile);
-            const uploadRes = await fetch('/admin/api/upload', { method: 'POST', body: formData });
+            const uploadRes = await apiFetch('/admin/api/upload', { method: 'POST', body: formData });
             const uploadData = await uploadRes.json();
             if (!uploadRes.ok) throw new Error(uploadData.error);
             imageUrl = uploadData.url;
@@ -373,7 +398,7 @@ async function handleProductSave(e) {
             for (let i = 0; i < galleryFiles.length; i++) {
                 const formData = new FormData();
                 formData.append('image', galleryFiles[i]);
-                const uploadRes = await fetch('/admin/api/upload', { method: 'POST', body: formData });
+                const uploadRes = await apiFetch('/admin/api/upload', { method: 'POST', body: formData });
                 const uploadData = await uploadRes.json();
                 if (!uploadRes.ok) throw new Error(uploadData.error);
                 uploadedUrls.push(uploadData.url);
@@ -395,7 +420,7 @@ async function handleProductSave(e) {
         const url = isEdit ? `/admin/api/products/${id}` : '/admin/api/products';
         const method = isEdit ? 'PUT' : 'POST';
 
-        const dbRes = await fetch(url, {
+        const dbRes = await apiFetch(url, {
             method: method,
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -411,9 +436,11 @@ async function handleProductSave(e) {
             loadAudit();
         }, 1000);
 
-    } catch (error) {
-        showToast('Chyba při ukládání', error.message, 'error');
-        status.innerHTML = `<span style="color: #ff4d4d;">${error.message}</span>`;
+    } catch (e) {
+        if (e.message !== 'Session expired') {
+            showToast('Chyba při ukládání', error.message, 'error');
+            status.innerHTML = `<span style="color: #ff4d4d;">${error.message}</span>`;
+        }
     } finally {
         status.innerHTML = '';
         btn.disabled = false;
@@ -428,17 +455,23 @@ async function handleProductDelete() {
     if (!id) return;
 
     if (confirm('VAROVÁNÍ: Opravdu chcete produkt smazat? Akce je nevratná!')) {
-        await fetch(`/admin/api/products/${id}`, { method: 'DELETE' });
-        closeProductForm();
-        await loadProducts();
-        await loadAudit();
+        try {
+            await apiFetch(`/admin/api/products/${id}`, { method: 'DELETE' });
+            closeProductForm();
+            await loadProducts();
+            await loadAudit();
+        } catch (error) {
+            if (error.message !== 'Session expired') {
+                showToast('Chyba', 'Produkt se nepodařilo smazat.', 'error');
+            }
+        }
     }
 }
 
 async function loadAudit() {
     const container = document.getElementById('audit-list-container');
     try {
-        const res = await fetch('/admin/api/audit');
+        const res = await apiFetch('/admin/api/audit');
         const logs = await res.json();
 
         if (logs.length === 0) {
@@ -462,6 +495,8 @@ async function loadAudit() {
         html += '</tbody></table>';
         container.innerHTML = html;
     } catch (e) {
-        container.innerHTML = '<p>Chyba při načítání auditu.</p>';
+        if (e.message !== 'Session expired') {
+            container.innerHTML = '<p>Chyba při načítání auditu.</p>';
+        }
     }
 }

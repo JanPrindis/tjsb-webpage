@@ -290,14 +290,14 @@ const requireAccessAuth = async (c, next) => {
         });
 
         if (!payload.email) {
-            return c.json({ error: 'Unauthorized: Token neobsahuje e-mail.' }, 403);
+            return c.json({ error: 'Unauthorized: Token neobsahuje e-mail.' }, 401); // Expired/Invalid token
         }
         c.set('adminEmail', payload.email);
         await next()
     }
     catch (error) {
         console.error("JWT Validation Error:", error.message);
-        return c.json({ error: 'Unauthorized: Neplatný nebo podvržený token.' }, 403)
+        return c.json({ error: 'Unauthorized: Neplatný nebo podvržený token.' }, 401); // Expired/Invalid token
     }
 }
 
