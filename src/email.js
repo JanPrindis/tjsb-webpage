@@ -1,3 +1,5 @@
+import { sanitize } from './sanitize.js';
+
 export async function sendEmail(env, toEmail, toName, subject, htmlContent) {
     if (env.ENABLE_EMAILS !== 'true') {
         console.log(`[EMAIL DISABLED] Simulating mail to: ${toEmail} | Subject: ${subject}`);
@@ -56,7 +58,7 @@ export async function sendOrderConfirmation(env, orderId, name, email, phone, it
 
     const itemsListHtml = items.map(i =>
         `<li style="padding: 10px 0; border-bottom: 1px solid #eee;">
-            <strong>${i.quantity}x ${i.name}</strong> ${i.size ? `<span style="color: #666; font-size: 0.9em;">(Velikost: ${i.size})</span>` : ''}
+            <strong>${i.quantity}x ${sanitize(i.name)}</strong> ${i.size ? `<span style="color: #666; font-size: 0.9em;">(Velikost: ${sanitize(i.size)})</span>` : ''}
             <div style="float: right; font-weight: bold;">${i.price * i.quantity} Kč</div>
         </li>`
     ).join('');
@@ -78,8 +80,8 @@ export async function sendOrderConfirmation(env, orderId, name, email, phone, it
                 </div>
 
                 <h3 style="border-bottom: 2px solid #054a88; padding-bottom: 5px; color: #054a88;">Tvoje údaje</h3>
-                <p style="margin: 5px 0;"><strong>Jméno:</strong> ${name}</p>
-                <p style="margin: 5px 0;"><strong>Telefon:</strong> ${phone}</p>
+                <p style="margin: 5px 0;"><strong>Jméno:</strong> ${sanitize(name)}</p>
+                <p style="margin: 5px 0;"><strong>Telefon:</strong> ${sanitize(phone)}</p>
 
                 <h3 style="border-bottom: 2px solid #054a88; padding-bottom: 5px; margin-top: 30px; color: #054a88;">Shrnutí rezervace</h3>
                 <ul style="list-style-type: none; padding: 0; margin: 0;">
@@ -118,7 +120,7 @@ export async function sendUncollectedEmail(env, orderId, name, email) {
                 <h1 style="margin: 0; font-size: 24px;">Zrušení objednávky</h1>
             </div>
             <div style="padding: 30px;">
-                <p>Ahoj ${name},</p>
+                <p>Ahoj,</p>
                 <p>tvá objednávka na tebe čekala připravená více než týden.</p>
                 <p>Jelikož sis ji nevyzvedl(a), náš systém ji <strong>automaticky stornoval</strong> a zboží bylo vráceno zpět do prodeje pro ostatní fanoušky.</p>
                 <p>Pokud o věci máš stále zájem, budeme rádi, když si vytvoříš na e-shopu novou rezervaci.</p>
@@ -147,7 +149,7 @@ export async function sendCustomerCancelEmail(env, orderId, name, email) {
                 <h1 style="margin: 0; font-size: 24px;">Rezervace stornována</h1>
             </div>
             <div style="padding: 30px;">
-                <p>Ahoj ${name},</p>
+                <p>Ahoj,</p>
                 <p>potvrzujeme, že jsme na tvou žádost <strong>stornovali rezervaci #${orderId}</strong>.</p>
                 <p>Zboží jsme uvolnili zpět do prodeje. Kdybys v budoucnu potřeboval(a) cokoliv dalšího, náš e-shop je ti vždy k dispozici.</p>
                 
@@ -174,7 +176,7 @@ export async function sendAdminCancelEmail(env, orderId, name, email) {
                 <h1 style="margin: 0; font-size: 24px;">Zrušení rezervace</h1>
             </div>
             <div style="padding: 30px;">
-                <p>Ahoj ${name},</p>
+                <p>Ahoj,</p>
                 <p>informujeme tě, že tvá rezervace <strong>#${orderId} byla zrušena administrátorem</strong>.</p>
                 
                 ${socialContactHtml}
