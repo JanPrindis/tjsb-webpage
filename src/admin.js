@@ -2,6 +2,8 @@ import { showToast } from './toast.js';
 import { sanitize } from './sanitize.js';
 import { OrderStatus } from "./constants.js";
 
+let isAuthRedirecting = false;
+
 async function apiFetch(url, options = {}) {
     const fetchOptions = {
         ...options,
@@ -12,13 +14,15 @@ async function apiFetch(url, options = {}) {
 
     // CF Access token expired
     if (response.type === 'opaqueredirect' || response.status === 401) {
-        showToast('Platnost relace vypršela', 'Budete přesměrováni na přihlašovací stránku.', 'error');
+        if (!isAuthRedirecting) {
+            isAuthRedirecting = true;
+            showToast('Platnost relace vypršela', 'Budete přesměrováni na přihlašovací stránku.', 'error');
 
-        setTimeout(() => {
-            const returnUrl = encodeURIComponent(window.location.origin + '/admin');
-            window.location.href = `/cdn-cgi/access/logout?returnTo=${returnUrl}`;
-        }, 1500);
-
+            setTimeout(() => {
+                const returnUrl = encodeURIComponent(window.location.origin + '/admin');
+                window.location.href = `/cdn-cgi/access/logout?returnTo=${returnUrl}`;
+            }, 1000);
+        }
         throw new Error('Session expired (Intercepted by Cloudflare)');
     }
 
