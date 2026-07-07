@@ -66,7 +66,7 @@ export async function sendOrderConfirmation(env, orderId, name, email, phone, it
     const htmlContent = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
             <div style="background-color: #111a3b; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
-                <h1 style="color: #ffd700; margin: 0; text-transform: uppercase; font-size: 24px;">Rezervace přijata!</h1>
+                <h1 style="color: #054A88; margin: 0; text-transform: uppercase; font-size: 24px;">Rezervace přijata!</h1>
             </div>
             <div style="padding: 30px 20px; border: 1px solid #eee; border-top: none; border-radius: 0 0 8px 8px;">
                 <p>Milý fanoušku/milá fanynko,</p>
