@@ -11,27 +11,15 @@ async function apiFetch(url, options = {}) {
     const response = await fetch(url, fetchOptions);
 
     // CF Access token expired
-    if (response.type === 'opaqueredirect') {
+    if (response.type === 'opaqueredirect' || response.status === 401) {
         showToast('Platnost relace vypršela', 'Budete přesměrováni na přihlašovací stránku.', 'error');
 
         setTimeout(() => {
             const returnUrl = encodeURIComponent(window.location.origin + '/admin');
             window.location.href = `/cdn-cgi/access/logout?returnTo=${returnUrl}`;
-        }, 1000);
+        }, 1500);
 
         throw new Error('Session expired (Intercepted by Cloudflare)');
-    }
-
-    // 401 code fallback
-    if (response.status === 401) {
-        showToast('Platnost relace vypršela', 'Budete přesměrováni na přihlašovací stránku.', 'error');
-
-        setTimeout(() => {
-            const returnUrl = encodeURIComponent(window.location.origin + '/admin');
-            window.location.href = `/cdn-cgi/access/logout?returnTo=${returnUrl}`;
-        }, 1000);
-
-        throw new Error('Unauthorized (Worker)');
     }
 
     return response;
