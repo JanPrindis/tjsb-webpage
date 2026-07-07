@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/svg+xml" href="/Logo_100.svg"/>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Objednávka úspěšná | TJ Sokol Bohuňovice</title>
+    <link rel="stylesheet" href="/src/style.css">
+    <link rel="stylesheet" href="/src/eshop_styles/common.css">
+    <link rel="stylesheet" href="/src/eshop_styles/success.css">
+</head>
+<body class="eshop-body">
+
+<header class="eshop-header">
+    <div class="header-container">
+        <div class="header-left">
+            <a href="/eshop.html" class="back-home-link">← Zpět do eshopu</a>
+        </div>
+
+        <div class="header-center">
+            <a href="/eshop.html">
+                <img src="/Logo_100.svg" alt="Sokol Bohuňovice" class="header-logo">
+            </a>
+        </div>
+    </div>
+</header>
+
+    <main class="eshop-main">
+        <div class="success-container" id="success-container">
+            <div style="text-align: center; color: rgba(255,255,255,0.5);">Načítám shrnutí...</div>
+        </div>
+    </main>
+
+
+    <footer class="site-footer">
+    <div class="footer-content">
+        <span class="copyright">&copy; <span id="current-year"></span> Sokol Bohuňovice</span>
+        <span class="separator">•</span>
+        <span class="author">Designed by <strong>Jan Přindiš</strong></span>
+        <span class="separator">•</span>
+        <span class="author-links">
+        <a href="mailto:jan.prindis3@gmail.com" title="Napiš mi">Email</a>
+        <span class="link-sep">|</span>
+        <a href="https://github.com/JanPrindis/" target="_blank" title="GitHub">GitHub</a>
+        <span class="link-sep">|</span>
+        <a href="https://www.instagram.com/jan_prindis" target="_blank" title="Instagram">IG</a>
+        </span>
+    </div>
+    </footer>
+
+    <script type="module" src="/src/success.js"></script>
+    <script>document.body.classList.add('loaded');</script>
+</body>
+</html>

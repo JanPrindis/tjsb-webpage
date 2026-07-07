@@ -13,6 +13,17 @@
     padding: 0;
 }
 
+/* FOUC fix */
+body {
+    opacity: 0;
+    transition: opacity 0.2s ease-in;
+}
+
+body.loaded {
+    opacity: 1;
+}
+/* -------- */
+
 body {
     font-family: system-ui, -apple-system, sans-serif;
     background-color: var(--bg-color);

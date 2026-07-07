@@ -1,0 +1,119 @@
+.cart-wrapper {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 3rem;
+    align-items: start;
+}
+
+.cart-items-list {
+    background: #151e42;
+    border: 1px solid #2a3b75;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.cart-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid #2a3b75;
+    background: #151e42;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.cart-row-main {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.cart-item-name {
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.cart-item-size {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.cart-row-details {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-left: auto;
+}
+
+.cart-item-subtotal {
+    font-weight: bold;
+    color: var(--yellow, #ffd700);
+    min-width: 80px;
+    text-align: right;
+}
+
+.btn-delete-item {
+    background: transparent;
+    border: none;
+    color: #ff4d4d;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    transition: transform 0.1s;
+}
+
+.btn-delete-item:hover {
+    transform: scale(1.2);
+}
+
+.cart-total-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    background: #0a0f24;
+    border: 1px solid #2a3b75;
+    border-top: none;
+    border-radius: 0 0 12px 12px;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.total-price-value {
+    color: var(--yellow, #ffd700);
+    font-size: 1.6rem;
+    font-weight: 900;
+}
+
+.checkout-box {
+    background: #151e42;
+    border: 1px solid #2a3b75;
+    border-radius: 12px;
+    padding: 2rem;
+}
+
+.checkout-box h2 {
+    margin: 0 0 0.5rem 0;
+    color: var(--yellow, #ffd700);
+}
+
+.form-info-text {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 1.5rem;
+    line-height: 1.4;
+}
+
+.empty-cart-box {
+    background: #151e42;
+    border: 1px solid #2a3b75;
+    padding: 3rem;
+    text-align: center;
+    border-radius: 12px;
+    font-size: 1.3rem;
+}
+
+.empty-cart-box p {
+    margin-bottom: 2rem;
+}

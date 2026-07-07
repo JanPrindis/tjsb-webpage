@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/svg+xml" href="/Logo_100.svg"/>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administrace | TJ Sokol Bohuňovice</title>
+    <link rel="stylesheet" href="/src/style.css">
+    <link rel="stylesheet" href="/src/eshop_styles/common.css">
+    <link rel="stylesheet" href="/src/eshop_styles/admin.css">
+</head>
+<body class="eshop-body">
+
+<header class="eshop-header">
+    <div class="header-container">
+        <div class="header-left">
+            <a href="/eshop.html" class="back-home-link">← Zpět na e-shop</a>
+        </div>
+        <div class="header-center">
+            <img src="/Logo_100.svg" alt="Sokol Bohuňovice" class="header-logo">
+        </div>
+        <div class="header-right">
+            <span style="color: var(--yellow, #ffd700); font-weight: bold; letter-spacing: 1px;">ADMINISTRACE</span>
+        </div>
+    </div>
+</header>
+
+<main class="eshop-main">
+    <div class="admin-tabs">
+        <button class="tab-btn active" data-tab="tab-orders">Objednávky</button>
+        <button class="tab-btn" data-tab="tab-products">Produkty</button>
+        <button class="tab-btn" data-tab="tab-audit">Audit Log</button>
+    </div>
+
+    <div class="admin-content">
+
+        <div id="tab-orders" class="tab-pane active">
+            <div class="admin-panel">
+                <h2>Přehled objednávek k vyzvednutí</h2>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <input type="text" id="search-orders" class="eshop-input" placeholder="Hledat jméno, email, nebo ID..." style="max-width: 350px;">
+                </div>
+
+                <div id="orders-list-container">
+                    <div class="loader">Načítám objednávky...</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-products" class="tab-pane">
+
+            <div id="product-list-view" class="admin-panel">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <h2 style="margin: 0;">Katalog produktů</h2>
+                    <button id="btn-add-new" class="btn-action-success">+ Přidat nový</button>
+                </div>
+                <div id="admin-products-list">
+                    <div class="loader">Načítám produkty...</div>
+                </div>
+            </div>
+
+            <div id="product-form-view" class="admin-panel" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid #2a3b75; padding-bottom: 1rem;">
+                    <h2 id="form-title" style="margin: 0; color: var(--yellow, #ffd700);">Přidat/Upravit produkt</h2>
+                    <button id="btn-cancel-edit" class="btn-action-secondary">Zpět bez uložení</button>
+                </div>
+
+                <form id="product-form">
+                    <input type="hidden" id="prod-id">
+
+                    <div class="form-group">
+                        <label for="prod-name">Název produktu *</label>
+                        <input type="text" id="prod-name" class="eshop-input" maxlength="150" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="prod-price">Cena (Kč) *</label>
+                        <input type="number" id="prod-price" class="eshop-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="prod-sizes">Velikosti (oddělené čárkou)</label>
+                        <input type="text" id="prod-sizes" class="eshop-input" placeholder="S, M, L" maxlength="100">
+                    </div>
+                    <div class="form-group">
+                        <label for="prod-desc">Popis</label>
+                        <textarea id="prod-desc" class="eshop-input" rows="4" maxlength="2000"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="prod-image">Hlavní (Cover) fotka</label>
+                        <input type="file" id="prod-image" class="eshop-input" accept="image/jpeg, image/png, image/webp">
+                        <small id="current-image-info" style="display: block; margin-top: 0.5rem; color: #888;"></small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="prod-gallery">Další fotky do galerie (Max 4)</label>
+                        <input type="file" id="prod-gallery" class="eshop-input" multiple accept="image/jpeg, image/png, image/webp">
+                        <small id="current-gallery-info" style="display: block; margin-top: 0.5rem; color: #888;"></small>
+                    </div>
+
+                    <button type="submit" class="btn-action-success" id="btn-save-product" style="width: 100%; font-size: 1.2rem; margin-top: 1rem;">
+                        ULOŽIT ZMĚNY
+                    </button>
+                    <div id="form-status" style="margin-top: 1rem; text-align: center; color: var(--yellow, #ffd700);"></div>
+                </form>
+
+                <div id="danger-zone" class="danger-zone" style="display: none;">
+                    <h3 style="color: #dc3545; margin-top: 0;">Smazat produkt</h3>
+                    <p>Tato akce trvale odstraní produkt i jeho fotku z e-shopu.</p>
+                    <button id="btn-delete-product" class="btn-action-danger">Trvale smazat</button>
+                </div>
+            </div>
+
+        </div>
+
+        <div id="tab-audit" class="tab-pane">
+            <div class="admin-panel">
+                <h2>Historie úprav (Audit Log)</h2>
+                <div id="audit-list-container">
+                    <div class="loader">Načítám logy...</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="order-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-order-title">Detail objednávky</h3>
+                <button id="btn-close-modal" class="modal-close">✕</button>
+            </div>
+            <div id="modal-order-body" class="modal-body">
+            </div>
+            <div class="modal-footer" id="modal-order-actions">
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<script type="module" src="/src/admin.js"></script>
+<script>document.body.classList.add('loaded');</script>
+
+<footer class="site-footer">
+    <div class="footer-content">
+        <span class="copyright">&copy; <span id="current-year"></span> Sokol Bohuňovice</span>
+        <span class="separator">•</span>
+        <span class="author">Designed by <strong>Jan Přindiš</strong></span>
+        <span class="separator">•</span>
+        <span class="author-links">
+      <a href="mailto:jan.prindis3@gmail.com" title="Napiš mi">Email</a>
+      <span class="link-sep">|</span>
+      <a href="https://github.com/JanPrindis/" target="_blank" title="GitHub">GitHub</a>
+      <span class="link-sep">|</span>
+      <a href="https://www.instagram.com/jan_prindis" target="_blank" title="Instagram">IG</a>
+    </span>
+    </div>
+</footer>
+</body>
+</html>

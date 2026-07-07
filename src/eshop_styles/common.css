@@ -1,0 +1,290 @@
+/* =========================================
+   GLOBAL E-SHOP STYLES
+   ========================================= */
+.eshop-body {
+    background-color: var(--bg-color, #111a3b) !important;
+    background-image: none !important;
+    color: white;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.eshop-main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 5rem 1rem 3rem 1rem;
+    width: 100%;
+    box-sizing: border-box;
+    flex: 1;
+}
+
+.eshop-title {
+    text-align: center;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    color: var(--yellow, #ffd700);
+    margin-bottom: 3rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+/* =========================================
+   SHARED HEADER
+   ========================================= */
+.eshop-header {
+    background-color: #0c1226;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    height: 70px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    position: relative;
+}
+
+.header-left, .header-right {
+    z-index: 100;
+}
+
+.back-home-link {
+    color: rgba(255, 255, 255, 0.6);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    transition: color 0.2s;
+    cursor: pointer;
+}
+
+.back-home-link:hover {
+    color: white;
+}
+
+.header-center {
+    position: absolute;
+    left: 50%;
+    top: 5px;
+    transform: translateX(-50%);
+    z-index: 1001;
+}
+
+.header-logo {
+    height: 125px;
+    width: auto;
+    filter: drop-shadow(0 14px 20px rgba(0, 0, 0, 0.85));
+    transition: transform 0.2s ease;
+}
+
+.header-logo:hover {
+    transform: scale(1.05);
+}
+
+.cart-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: transparent;
+    color: var(--yellow, #ffd700);
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    border: 1px solid transparent;
+    box-shadow: inset 0 0 0 1px var(--yellow, #ffd700);
+    transition: all 0.2s ease;
+}
+
+.cart-btn:hover {
+    background: var(--yellow, #ffd700);
+    color: #0c1226;
+    box-shadow: none;
+}
+
+/* =========================================
+   SHARED FORMS & BUTTONS
+   ========================================= */
+.btn-action-primary, .btn-action-success, .btn-action-secondary, .btn-action-danger {
+    border: none;
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+}
+
+.btn-action-primary {
+    background: var(--yellow, #ffd700);
+    color: #0c1226;
+    border: 1px solid transparent;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 50px;
+}
+
+.btn-action-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
+}
+
+.btn-action-success {
+    background: #28a745;
+    color: white;
+}
+
+.btn-action-success:hover {
+    background: #218838;
+    transform: translateY(-2px);
+}
+
+.btn-action-secondary {
+    background: transparent;
+    color: white;
+    border: 1px solid white;
+    padding: 0.8rem 1.5rem;
+}
+
+.btn-action-danger {
+    background: #dc3545;
+    color: white;
+    padding: 0.8rem 1.5rem;
+}
+
+.eshop-input, .eshop-select {
+    width: 100%;
+    padding: 0.8rem;
+    background: #0c1226;
+    border: 1px solid #2a3b75;
+    color: white;
+    border-radius: 6px;
+    font-size: 1rem;
+    box-sizing: border-box;
+    outline: none;
+}
+
+.eshop-input:focus, .eshop-select:focus {
+    border-color: var(--yellow, #ffd700);
+}
+
+.form-group {
+    margin-bottom: 1.2rem;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.9rem;
+    margin-bottom: 0.4rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* =========================================
+   SHARED UTILITIES (Loader, Toast, etc.)
+   ========================================= */
+.error-msg {
+    text-align: center;
+    color: #ff4d4d;
+    font-size: 1.2rem;
+    width: 100%;
+    padding: 2rem;
+}
+
+.loader {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.5);
+    width: 100%;
+    padding: 3rem;
+}
+
+.toast-notification {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: #151e42;
+    border-left: 4px solid #28a745;
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    z-index: 9999;
+    transform: translateY(100px);
+    opacity: 0;
+    animation: slideInUp 0.3s forwards, fadeOutDown 0.3s forwards 2.5s;
+}
+
+.toast-icon { font-size: 1.5rem; }
+.toast-text strong { display: block; font-size: 1rem; margin-bottom: 0.2rem; }
+.toast-text span { font-size: 0.85rem; color: rgba(255, 255, 255, 0.7); }
+
+.toast-notification.toast-success {
+    border-left-color: #28a745;
+}
+
+.toast-notification.toast-error {
+    border-left-color: #dc3545;
+}
+
+@keyframes slideInUp { to { transform: translateY(0); opacity: 1; } }
+@keyframes fadeOutDown { to { transform: translateY(20px); opacity: 0; } }
+
+.cart-bump { animation: bump 0.4s ease-out; }
+@keyframes bump {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.15); background: #28a745; color: white; border-color: #28a745; }
+    100% { transform: scale(1); }
+}
+
+.input-error { border-color: #ff4d4d !important; animation: shake 0.4s; }
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+/* =========================================
+   SHARED MOBILE RESPONSIVE
+   ========================================= */
+@media (max-width: 768px) {
+    .eshop-header {
+        height: 80px;
+    }
+    .header-container {
+        padding: 0 1rem;
+    }
+    .header-left {
+        display: none;
+    }
+    .header-center {
+        position: relative;
+        left: auto;
+        top: auto;
+        transform: none;
+    }
+    .header-logo {
+        height: 60px;
+        margin-top: 0;
+        filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
+    }
+    .eshop-main {
+        padding-top: 2rem;
+    }
+}

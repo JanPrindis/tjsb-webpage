@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/Logo_100.svg"/>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detail produktu | TJ Sokol Bohuňovice</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+
+  <link rel="stylesheet" href="/src/style.css">
+  <link rel="stylesheet" href="/src/eshop_styles/common.css">
+  <link rel="stylesheet" href="/src/eshop_styles/product_detail.css">
+
+</head>
+<body class="eshop-body">
+
+<header class="eshop-header">
+  <div class="header-container">
+    <div class="header-left">
+      <a href="/eshop.html" class="back-home-link">← Zpět do eshopu</a>
+    </div>
+    <div class="header-center">
+      <a href="/eshop.html">
+        <img src="/Logo_100.svg" alt="Sokol Bohuňovice" class="header-logo">
+      </a>
+    </div>
+    <div class="header-right">
+      <a href="/cart.html" class="cart-btn">
+        🛒 Košík (<span id="cart-count">0</span>)
+      </a>
+    </div>
+  </div>
+</header>
+
+<main class="eshop-main">
+  <div id="product-container" class="product-detail-layout">
+    <div class="loader">Načítám detaily produktu...</div>
+  </div>
+</main>
+
+<div id="image-lightbox" class="lightbox-modal">
+  <span class="lightbox-close">&times;</span>
+  <img id="lightbox-img" src="" alt="Zvětšený obrázek">
+</div>
+
+<script type="module" src="/src/product.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script>document.body.classList.add('loaded');</script>
+</body>
+
+<footer class="site-footer">
+  <div class="footer-content">
+    <span class="copyright">&copy; <span id="current-year"></span> Sokol Bohuňovice</span>
+    <span class="separator">•</span>
+    <span class="author">Designed by <strong>Jan Přindiš</strong></span>
+    <span class="separator">•</span>
+    <span class="author-links">
+      <a href="mailto:jan.prindis3@gmail.com" title="Napiš mi">Email</a>
+      <span class="link-sep">|</span>
+      <a href="https://github.com/JanPrindis/" target="_blank" title="GitHub">GitHub</a>
+      <span class="link-sep">|</span>
+      <a href="https://www.instagram.com/jan_prindis" target="_blank" title="Instagram">IG</a>
+    </span>
+  </div>
+</footer>
+</html>
