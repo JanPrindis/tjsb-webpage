@@ -552,8 +552,8 @@ app.get('*', async (c, next) => {
     if (url.pathname.startsWith('/api') || url.pathname.startsWith('/admin/api')) {
         return await next();
     }
-    const newRequest = new Request(new URL('/index.html', url.origin), c.req.raw);
-    return c.env.ASSETS.fetch(newRequest);
+
+    return c.redirect('/', 301);
 })
 
 app.notFound((c) => c.json({ error: 'Endpoint nenalezen' }, 404))
