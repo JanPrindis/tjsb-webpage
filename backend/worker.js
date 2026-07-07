@@ -162,51 +162,60 @@ app.post('/api/orders', async (c) => {
     // Generate cancellation token
     const cancelToken = crypto.randomUUID()
 
-    // Safe write to db
-    const orderResult = await c.env.DB.prepare(
-        'INSERT INTO orders (customer_name, customer_email, customer_phone, status, cancel_token) VALUES (?, ?, ?, ?, ?)'
-    ).bind(customer_name, customer_email, customer_phone.replace(/\s/g, ''), OrderStatus.PENDING, cancelToken).run()
+    try {
+        // --- Start Transaction ---
+        const orderInsertStmt = c.env.DB.prepare(
+            'INSERT INTO orders (customer_name, customer_email, customer_phone, status, cancel_token) VALUES (?, ?, ?, ?, ?)'
+        ).bind(customer_name, customer_email, customer_phone.replace(/\s/g, ''), OrderStatus.PENDING, cancelToken);
 
-    const orderId = orderResult.meta.last_row_id
+        const orderResult = await orderInsertStmt.run();
+        const orderId = orderResult.meta.last_row_id;
 
-    const stmts = items.map(item => {
-        const dbProduct = productMap.get(item.id); // Get the trusted product data
-        return c.env.DB.prepare(
-            'INSERT INTO order_items (order_id, product_id, product_name, size, quantity, price) VALUES (?, ?, ?, ?, ?, ?)'
-        ).bind(orderId, item.id, dbProduct.name, item.size || null, item.quantity, dbProduct.price);
-    });
+        // Prepare the batch for order items
+        const itemStmts = items.map(item => {
+            const dbProduct = productMap.get(item.id); // Get the trusted product data
+            return c.env.DB.prepare(
+                'INSERT INTO order_items (order_id, product_id, product_name, size, quantity, price) VALUES (?, ?, ?, ?, ?, ?)'
+            ).bind(orderId, item.id, dbProduct.name, item.size || null, item.quantity, dbProduct.price);
+        });
 
-    await c.env.DB.batch(stmts)
+        await c.env.DB.batch(itemStmts);
+        // --- End Transaction ---
 
-    const host = new URL(c.req.url).origin
-    const cancelLink = `${host}/api/cancel?id=${orderId}&token=${cancelToken}`
+        const host = new URL(c.req.url).origin
+        const cancelLink = `${host}/api/cancel?id=${orderId}&token=${cancelToken}`
 
-    if (c.env.ENABLE_EMAILS !== 'true') {
-        console.log(`[EMAIL LINK] E-mails are disabled. Cancel link for order: \n${cancelLink}`);
-    }
+        if (c.env.ENABLE_EMAILS !== 'true') {
+            console.log(`[EMAIL LINK] E-mails are disabled. Cancel link for order: \n${cancelLink}`);
+        }
 
-    const verifiedItems = items.map(cartItem => {
-        const dbProduct = productMap.get(cartItem.id);
-        return {
-            ...cartItem,
-            name: dbProduct.name,
-            price: dbProduct.price
-        };
-    });
+        const verifiedItems = items.map(cartItem => {
+            const dbProduct = productMap.get(cartItem.id);
+            return {
+                ...cartItem,
+                name: dbProduct.name,
+                price: dbProduct.price
+            };
+        });
 
-    c.executionCtx.waitUntil(
-        sendOrderConfirmation(
-            c.env,
-            orderId,
-            customer_name,
-            customer_email,
-            customer_phone,
-            verifiedItems,
-            cancelLink
+        c.executionCtx.waitUntil(
+            sendOrderConfirmation(
+                c.env,
+                orderId,
+                customer_name,
+                customer_email,
+                customer_phone,
+                verifiedItems,
+                cancelLink
+            )
         )
-    )
 
-    return c.json({ success: true, orderId })
+        return c.json({ success: true, orderId })
+
+    } catch (e) {
+        console.error("Order creation transaction failed:", e);
+        return c.json({ error: 'Při vytváření rezervace došlo k chybě.' }, 500);
+    }
 })
 
 // Customer order cancellation
@@ -295,6 +304,22 @@ const requireAccessAuth = async (c, next) => {
 // Apply middleware to all routes under /admin/api/
 app.use('/admin/api/*', requireAccessAuth)
 
+// ============================================
+// R2 Key Helper
+// ============================================
+function getKeyFromUrl(url) {
+    if (!url) return null;
+    try {
+        const pathname = new URL(url, 'http://dummybase').pathname;
+
+        // The key is everything after the /assets/ part in dev, or the root in prod
+        const key = pathname.startsWith('/assets/') ? pathname.substring('/assets/'.length) : pathname.substring(1);
+        return key.startsWith('products/') ? key : null;
+    } catch (e) {
+        console.error(`Could not parse key from URL: ${url}`, e);
+        return null;
+    }
+}
 
 // ============================================
 // ADMIN ROUTES - Product management
@@ -388,10 +413,12 @@ app.put('/admin/api/products/:id', async (c) => {
     const newImageUrl = image_url !== undefined ? image_url : oldData.image_url;
     const newGalleryUrls = gallery_urls !== undefined ? gallery_urls : oldData.gallery_urls;
 
+    const keysToDelete = [];
+
     // If the old image exists and is being changed or removed, delete it from R2
     if (oldData.image_url && oldData.image_url !== newImageUrl) {
-        const oldKey = oldData.image_url.split('/').pop();
-        if (oldKey) await c.env.BUCKET.delete(`products/${oldKey}`);
+        const oldKey = getKeyFromUrl(oldData.image_url);
+        if (oldKey) keysToDelete.push(oldKey);
     }
 
     // If the old gallery exists, find which images were removed and delete them
@@ -400,10 +427,14 @@ app.put('/admin/api/products/:id', async (c) => {
         const newUrlsList = newGalleryUrls ? newGalleryUrls.split(',') : [];
         const urlsToDelete = oldUrls.filter(url => !newUrlsList.includes(url));
 
-        for (const url of urlsToDelete) {
-            const oldKey = url.split('/').pop();
-            if (oldKey) await c.env.BUCKET.delete(`products/${oldKey}`);
-        }
+        urlsToDelete.forEach(url => {
+            const key = getKeyFromUrl(url);
+            if (key) keysToDelete.push(key);
+        });
+    }
+
+    if (keysToDelete.length > 0) {
+        await c.env.BUCKET.delete(keysToDelete);
     }
 
     await c.env.DB.prepare(
@@ -423,18 +454,29 @@ app.delete('/admin/api/products/:id', async (c) => {
     if (!product) return c.json({ error: 'Nenalezeno' }, 404)
 
     // Delete images from R2
-    const filesToDelete = []
-    if (product.image_url) filesToDelete.push(product.image_url.replace('/assets/', ''))
+    const keysToDelete = [];
+    if (product.image_url) {
+        const key = getKeyFromUrl(product.image_url);
+        if (key) keysToDelete.push(key);
+    }
     if (product.gallery_urls) {
-        product.gallery_urls.split(',').forEach(url => filesToDelete.push(url.replace('/assets/', '')))
+        product.gallery_urls.split(',').forEach(url => {
+            const key = getKeyFromUrl(url);
+            if (key) keysToDelete.push(key);
+        });
     }
 
-    for (const key of filesToDelete) {
-        if (key) await c.env.BUCKET.delete(key)
+    if (keysToDelete.length > 0) {
+        await c.env.BUCKET.delete(keysToDelete);
     }
 
-    await c.env.DB.prepare('DELETE FROM products WHERE id = ?').bind(id).run()
-    await logAction(c.env.DB, adminEmail, 'DELETE', 'PRODUCT', id, { name: product.name })
+    const dbStatements = [
+        c.env.DB.prepare('DELETE FROM products WHERE id = ?').bind(id),
+        c.env.DB.prepare('INSERT INTO audit_logs (admin_email, action, entity, entity_id, details) VALUES (?, ?, ?, ?, ?)')
+            .bind(adminEmail, 'DELETE', 'PRODUCT', id, JSON.stringify({ name: product.name }))
+    ];
+
+    await c.env.DB.batch(dbStatements);
 
     return c.json({ success: true })
 })
