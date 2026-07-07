@@ -25,3 +25,7 @@ REPLY_TO_NAME="Neodpovídejte / Automat"
 
 [triggers]
 crons = ["0 3 * * *"]
+
+[observability.logs]
+enabled = true
+invocation_logs = true
