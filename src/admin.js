@@ -2,10 +2,26 @@ import { showToast } from './toast.js';
 import { sanitize } from './sanitize.js';
 import { OrderStatus } from "./constants.js";
 
-async function apiFetch(url, options) {
-    const response = await fetch(url, options);
+async function apiFetch(url, options = {}) {
+    const fetchOptions = {
+        ...options,
+        redirect: 'manual'
+    };
 
-    // If the session is expired or invalid, redirect to login
+    const response = await fetch(url, fetchOptions);
+
+    // CF Access token expired
+    if (response.type === 'opaqueredirect') {
+        showToast('Platnost relace vypršela', 'Budete přesměrováni na přihlašovací stránku.', 'error');
+
+        setTimeout(() => {
+            window.location.reload();
+        }, 1000);
+
+        throw new Error('Session expired (Intercepted by Cloudflare)');
+    }
+
+    // 401 code fallback
     if (response.status === 401) {
         showToast('Platnost relace vypršela', 'Budete přesměrováni na přihlašovací stránku.', 'error');
 
@@ -13,7 +29,7 @@ async function apiFetch(url, options) {
             window.location.reload();
         }, 1000);
 
-        throw new Error('Session expired');
+        throw new Error('Unauthorized (Worker)');
     }
 
     return response;
