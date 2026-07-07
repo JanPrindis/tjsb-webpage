@@ -5,9 +5,9 @@ export async function sendEmail(env, toEmail, toName, subject, htmlContent) {
     }
 
     const emailPayload = {
-        sender: { name: "rezervace@tjsbfotbal.cz", email: "rezervace@tjsbfotbal.cz" },
+        sender: { name: env.SENDER_NAME, email: env.SENDER_EMAIL },
         to: [{ email: toEmail, name: toName }],
-        replyTo: { email: "noreply@tjsbfotbal.cz", name: "Neodpovídejte / Automat" },
+        replyTo: { name: env.REPLY_TO_NAME, email: env.REPLY_TO_EMAIL },
         subject: subject,
         htmlContent: htmlContent
     };
@@ -69,7 +69,7 @@ export async function sendOrderConfirmation(env, orderId, name, email, phone, it
                 <h1 style="color: #ffd700; margin: 0; text-transform: uppercase; font-size: 24px;">Rezervace přijata!</h1>
             </div>
             <div style="padding: 30px 20px; border: 1px solid #eee; border-top: none; border-radius: 0 0 8px 8px;">
-                <p>Ahoj ${name},</p>
+                <p>Milý fanoušku/milá fanynko,</p>
                 <p>díky za tvou rezervaci týmového merche. Tvůj požadavek jsme v pořádku zapsali do systému.</p>
                 
                 <div style="background-color: #f9f9f9; padding: 15px; border-left: 4px solid #3498db; margin: 25px 0;">
