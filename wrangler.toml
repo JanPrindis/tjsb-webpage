@@ -17,6 +17,11 @@ bucket_name = "tjsb-eshop"
 [vars]
 ENVIRONMENT = "production"
 ENABLE_EMAILS = "true"
+TEAM_DOMAIN="tjsbfotbal.cloudflareaccess.com",
+SENDER_EMAIL="rezervace@tjsbfotbal.cz"
+SENDER_NAME="rezervace@tjsbfotbal.cz"
+REPLY_TO_EMAIL="noreply@tjsbfotbal.cz"
+REPLY_TO_NAME="Neodpovídejte / Automat"
 
 [triggers]
 crons = ["0 3 * * *"]
