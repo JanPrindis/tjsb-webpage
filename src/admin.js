@@ -12,17 +12,17 @@ async function apiFetch(url, options = {}) {
 
     const response = await fetch(url, fetchOptions);
 
-    // CF Access token expired
     if (response.type === 'opaqueredirect' || response.status === 401) {
         if (!isAuthRedirecting) {
             isAuthRedirecting = true;
+
             showToast('Platnost relace vypršela', 'Budete přesměrováni na přihlašovací stránku.', 'error');
 
             setTimeout(() => {
-                const returnUrl = encodeURIComponent(window.location.origin + '/admin');
-                window.location.href = `/cdn-cgi/access/logout?returnTo=${returnUrl}`;
+                window.location.href = '/admin';
             }, 1000);
         }
+
         throw new Error('Session expired (Intercepted by Cloudflare)');
     }
 
