@@ -15,7 +15,8 @@ async function apiFetch(url, options = {}) {
         showToast('Platnost relace vypršela', 'Budete přesměrováni na přihlašovací stránku.', 'error');
 
         setTimeout(() => {
-            window.location.href = '/admin';
+            const returnUrl = encodeURIComponent(window.location.origin + '/admin');
+            window.location.href = `/cdn-cgi/access/logout?returnTo=${returnUrl}`;
         }, 1000);
 
         throw new Error('Session expired (Intercepted by Cloudflare)');
@@ -26,7 +27,8 @@ async function apiFetch(url, options = {}) {
         showToast('Platnost relace vypršela', 'Budete přesměrováni na přihlašovací stránku.', 'error');
 
         setTimeout(() => {
-            window.location.href = '/admin';
+            const returnUrl = encodeURIComponent(window.location.origin + '/admin');
+            window.location.href = `/cdn-cgi/access/logout?returnTo=${returnUrl}`;
         }, 1000);
 
         throw new Error('Unauthorized (Worker)');
