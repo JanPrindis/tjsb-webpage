@@ -120,6 +120,9 @@ function renderDetail(product, container) {
             },
             loop: true,
             grabCursor: true,
+            autoplay: {
+                delay: 5000,
+            }
         });
     }
 
