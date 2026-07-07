@@ -103,7 +103,7 @@ app.post('/api/orders', async (c) => {
 
     const turnstileResult = await validateTurnstile(
         turnstileToken,
-        c.env.TURNSTILE_TOKEN,
+        c.env.TURNSTILE_SECRET,
         c.req.header(`cf-connecting-ip`)
     );
 
