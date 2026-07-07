@@ -545,6 +545,18 @@ app.onError((err, c) => {
     return c.json({ error: 'Chyba serveru' }, 500)
 })
 
+// Unknown redirect to index
+app.get('*', async (c, next) => {
+    const url = new URL(c.req.url);
+
+    if (url.pathname.startsWith('/api') || url.pathname.startsWith('/admin/api')) {
+        return await next();
+    }
+
+    const newRequest = new Request(new URL('/index.html', url.origin), c.req);
+    return c.env.ASSETS.fetch(newRequest);
+})
+
 app.notFound((c) => c.json({ error: 'Endpoint nenalezen' }, 404))
 
 export default {
