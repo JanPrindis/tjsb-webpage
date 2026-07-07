@@ -552,8 +552,7 @@ app.get('*', async (c, next) => {
     if (url.pathname.startsWith('/api') || url.pathname.startsWith('/admin/api')) {
         return await next();
     }
-
-    const newRequest = new Request(new URL('/index.html', url.origin), c.req);
+    const newRequest = new Request(new URL('/index.html', url.origin), c.req.raw);
     return c.env.ASSETS.fetch(newRequest);
 })
 
