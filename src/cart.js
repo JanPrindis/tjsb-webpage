@@ -99,8 +99,8 @@ async function handleCheckoutSubmit(e) {
 
     // Phone number verification
     const phoneInput = document.getElementById('cust-phone');
-    const phoneValue = phoneInput.value.replace(/\s/g, '');
-    const phoneRegex = /^(\+420|420)?[1-9][0-9]{8}$/;
+    const phoneValue = phoneInput.value.replace(/[\s\-()]/g, '');
+    const phoneRegex = /^(?:\+?(?:420|421|49|43|48))?[1-9]\d{7,11}$/;
 
     const honeypotInput = document.getElementById('website-url');
 

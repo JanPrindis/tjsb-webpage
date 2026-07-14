@@ -122,7 +122,7 @@ app.post('/api/orders', async (c) => {
     }
 
     // Backend validation
-    if (customer_name.length > 100 || customer_email.length > 100 || customer_phone.length > 20) {
+    if (customer_name.length > 100 || customer_email.length > 100 || customer_phone.length > 40) {
         return c.json({ error: 'Některý z údajů je příliš dlouhý.' }, 400)
     }
 
@@ -131,8 +131,8 @@ app.post('/api/orders', async (c) => {
         return c.json({ error: 'Neplatný formát e-mailu' }, 400)
     }
 
-    const phoneRegex = /^(\+420|420)?[1-9][0-9]{8}$/
-    if (!phoneRegex.test(customer_phone.replace(/\s/g, ''))) {
+    const phoneRegex = /^(?:\+?(?:420|421|49|43|48))?[1-9]\d{7,11}$/;
+    if (!phoneRegex.test(customer_phone.replace(/[\s\-()]/g, ''))) {
         return c.json({ error: 'Neplatný formát telefonu' }, 400)
     }
 
