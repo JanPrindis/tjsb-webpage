@@ -1,6 +1,8 @@
 import { showToast } from './toast.js';
 import { sanitize } from './sanitize.js';
 import { OrderStatus } from "./constants.js";
+import { polyfill } from "mobile-drag-drop";
+import "mobile-drag-drop/default.css";
 
 let isAuthRedirecting = false;
 
@@ -29,6 +31,12 @@ async function apiFetch(url, options = {}) {
     return response;
 }
 
+polyfill({
+    holdToDrag: 0
+});
+
+window.addEventListener('touchmove', function() {}, {passive: false});
+
 document.addEventListener('DOMContentLoaded', () => {
     initTabs();
     initModals();
@@ -50,6 +58,12 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-cancel-edit').addEventListener('click', closeProductForm);
     document.getElementById('product-form').addEventListener('submit', handleProductSave);
     document.getElementById('btn-delete-product').addEventListener('click', handleProductDelete);
+
+    document.getElementById('btn-save-order').addEventListener('click', saveNewOrder);
+    document.getElementById('btn-revert-order').addEventListener('click', () => {
+        document.getElementById('order-action-bar').style.display = 'none';
+        loadProducts();
+    });
 });
 
 function initTabs() {
@@ -309,19 +323,34 @@ async function loadProducts() {
             const imageSrc = p.image_url || placeholderSvg;
 
             html += `
-                <div class="admin-item-row" onclick="editProduct(${p.id})">
-                    <div class="admin-item-img">
-                        <img src="${imageSrc}" alt="${sanitize(p.name)}" onerror="this.onerror=null;this.src='${placeholderSvg}';">
-                    </div>
-                    <div class="admin-item-info">
-                        <strong>${sanitize(p.name)}</strong>
-                        <span>${p.price} Kč</span>
-                    </div>
-                    <button class="btn-action-secondary btn-sm">✏️ Upravit</button>
+            <div class="admin-item-row" data-id="${p.id}">
+                <div class="drag-handle">☰</div>
+                <div class="admin-item-img">
+                    <img src="${imageSrc}" alt="${sanitize(p.name)}" onerror="this.onerror=null;this.src='${placeholderSvg}';">
                 </div>
-            `;
+                <div class="admin-item-info">
+                    <strong>${sanitize(p.name)}</strong>
+                    <span>${p.price} Kč</span>
+                </div>
+                <button class="btn-action-secondary btn-sm edit-btn" data-id="${p.id}">✏️ Upravit</button>
+            </div>
+        `;
         });
+
         container.innerHTML = html;
+
+        const rows = container.querySelectorAll('.admin-item-row');
+        rows.forEach(row => {
+            const editBtn = row.querySelector('.edit-btn');
+            if (editBtn) {
+                editBtn.addEventListener('click', (e) => {
+                    const id = parseInt(editBtn.getAttribute('data-id'));
+                    editProduct(id);
+                });
+            }
+        });
+
+        initDragAndDrop();
     } catch (e) {
         if (e.message !== 'Session expired') {
             container.innerHTML = '<p class="error-msg">Chyba při načítání produktů.</p>';
@@ -508,5 +537,132 @@ async function loadAudit() {
         if (e.message !== 'Session expired') {
             container.innerHTML = '<p>Chyba při načítání auditu.</p>';
         }
+    }
+}
+
+function initDragAndDrop() {
+    const container = document.getElementById('admin-products-list');
+    const rows = container.querySelectorAll('.admin-item-row');
+    let draggedItem = null;
+
+    rows.forEach(row => {
+        const dragHandle = row.querySelector('.drag-handle');
+        if (dragHandle) {
+            dragHandle.addEventListener('touchstart', () => {
+                row.setAttribute('draggable', 'true');
+            }, { passive: true, capture: true });
+
+            dragHandle.addEventListener('mousedown', () => {
+                row.setAttribute('draggable', 'true');
+            });
+        }
+
+        row.addEventListener('touchend', () => {
+            setTimeout(() => {
+                if (!row.classList.contains('dragging')) row.removeAttribute('draggable');
+            }, 50);
+        }, { passive: true });
+
+        row.addEventListener('mouseup', () => {
+            setTimeout(() => {
+                if (!row.classList.contains('dragging')) row.removeAttribute('draggable');
+            }, 50);
+        });
+
+        row.addEventListener('dragstart', function(e) {
+            draggedItem = this;
+            if (e.dataTransfer) {
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', this.getAttribute('data-id'));
+            }
+            setTimeout(() => this.classList.add('dragging'), 0);
+        });
+
+        row.addEventListener('dragend', function() {
+            this.classList.remove('dragging');
+            this.removeAttribute('draggable');
+            draggedItem = null;
+            checkForChanges();
+        });
+    });
+
+    container.addEventListener('dragenter', (e) => {
+        e.preventDefault();
+    });
+
+    container.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+
+        if (!draggedItem) return;
+
+        const afterElement = getDragAfterElement(container, e.clientY);
+
+        if (afterElement == null) {
+            container.appendChild(draggedItem);
+        } else {
+            container.insertBefore(draggedItem, afterElement);
+        }
+    });
+
+    container.addEventListener('drop', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+    });
+}
+
+function checkForChanges() {
+    const currentDOMIds = Array.from(document.querySelectorAll('#admin-products-list .admin-item-row'))
+        .map(row => parseInt(row.getAttribute('data-id')));
+
+    const originalIds = currentProducts.map(p => p.id);
+
+    const isChanged = JSON.stringify(currentDOMIds) !== JSON.stringify(originalIds);
+    document.getElementById('order-action-bar').style.display = isChanged ? 'flex' : 'none';
+}
+
+function getDragAfterElement(container, y) {
+    const draggableElements = [...container.querySelectorAll('.admin-item-row:not(.dragging)')];
+    return draggableElements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        if (offset < 0 && offset > closest.offset) {
+            return { offset: offset, element: child };
+        } else {
+            return closest;
+        }
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
+}
+
+async function saveNewOrder() {
+    const btn = document.getElementById('btn-save-order');
+    btn.textContent = 'Ukládám...';
+    btn.disabled = true;
+
+    const rows = document.querySelectorAll('#admin-products-list .admin-item-row');
+    const newOrder = [];
+
+    rows.forEach((row, index) => {
+        newOrder.push({
+            id: parseInt(row.getAttribute('data-id')),
+            position: index
+        });
+    });
+
+    try {
+        await apiFetch('/admin/api/products/reorder', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ items: newOrder })
+        });
+        showToast('Uloženo', 'Nové pořadí uloženo.', 'success');
+
+        document.getElementById('order-action-bar').style.display = 'none';
+        await loadProducts();
+    } catch (e) {
+        showToast('Chyba', 'Nepodařilo se uložit nové pořadí.', 'error');
+    } finally {
+        btn.textContent = 'Uložit pořadí';
+        btn.disabled = false;
     }
 }

@@ -66,7 +66,6 @@
     border-radius: 8px;
     border: 1px solid transparent;
     transition: border-color 0.2s;
-    cursor: pointer;
 }
 
 .admin-item-row:hover { border-color: #2a3b75; }
@@ -154,6 +153,59 @@ th.sortable:hover { color: white; }
 .badge-ready { background: #3498db; color: white; }
 .badge-done { background: #28a745; color: white; }
 .badge-cancel { background: #dc3545; color: white; }
+
+/* Drag & Drop reorder*/
+.drag-handle {
+    cursor: grab;
+    font-size: 1.5rem;
+    color: rgba(255,255,255,0.3);
+    transition: color 0.2s;
+    padding: 1rem;
+
+    user-select: none;
+    -webkit-user-select: none;
+
+    touch-action: none;
+}
+.drag-handle:hover { color: var(--yellow); }
+.admin-item-row.dragging {
+    opacity: 0.5;
+    border: 2px dashed var(--yellow);
+}
+
+.order-action-bar {
+    background: rgba(52, 152, 219, 0.1);
+    border: 1px solid #3498db;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.order-action-text {
+    color: #fff;
+    font-weight: bold;
+}
+
+.order-action-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .order-action-bar {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+    .order-action-buttons {
+        width: 100%;
+    }
+    .order-action-buttons button {
+        flex: 1;
+    }
+}
 
 /* Admin modal for order details */
 .modal-overlay {
@@ -340,5 +392,38 @@ th.sortable:hover { color: white; }
     }
     .modal-btn {
         width: 100% !important;
+    }
+    .admin-item-row {
+        gap: 0.5rem;
+        padding: 0.8rem 0.5rem;
+    }
+
+    .drag-handle {
+        padding: 0.5rem;
+        margin: 0;
+        font-size: 1.2rem;
+    }
+
+    .admin-item-img {
+        width: 45px;
+        height: 45px;
+    }
+
+    .admin-item-info {
+        min-width: 0;
+    }
+
+    .admin-item-info strong {
+        font-size: 0.95rem;
+        display: block;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .edit-btn {
+        padding: 0.4rem 0.6rem !important;
+        font-size: 0.8rem;
+        flex-shrink: 0;
     }
 }
