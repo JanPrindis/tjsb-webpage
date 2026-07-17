@@ -1,5 +1,6 @@
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { DateTime } from "luxon";
 
 gsap.registerPlugin(ScrollTrigger);
 ScrollTrigger.config({ignoreMobileResize: true});
@@ -18,7 +19,7 @@ async function initData() {
         // Works if URL contains ?debug=true
         if (window.location.search.includes('debug=true')) {
             runDebugMode(matches);
-            document.getElementById('current-year').textContent = new Date().getFullYear();
+            document.getElementById('current-year').textContent = new Date().getFullYear().toString();
             return;
         }
         // -------------------------
@@ -36,7 +37,7 @@ async function initData() {
         }
 
         renderSchedule(matches, activeMatch);
-        document.getElementById('current-year').textContent = new Date().getFullYear();
+        document.getElementById('current-year').textContent = new Date().getFullYear().toString();
     } catch (error) {
         document.getElementById('active-match-container').innerHTML = '<div style="color:white;">Chyba dat.</div>';
         console.log(error);
@@ -44,13 +45,13 @@ async function initData() {
 }
 
 function findActiveMatch(matches) {
-    const now = new Date();
+    const now = DateTime.now().setZone('Europe/Prague');
     let prevMatch = null;
     let nextMatch = null;
 
     // Get last and upcoming match
     for (let i = 0; i < matches.length; i++) {
-        const matchDate = new Date(`${matches[i].date}T${matches[i].time}:00`);
+        const matchDate = DateTime.fromISO(`${matches[i].date}T${matches[i].time}:00`, { zone: 'Europe/Prague' });
         if (matchDate > now) {
             nextMatch = matches[i];
             if (i > 0) {
@@ -66,8 +67,8 @@ function findActiveMatch(matches) {
     }
 
     if (prevMatch) {
-        const prevMatchDate = new Date(`${prevMatch.date}T${prevMatch.time}:00`);
-        const hoursSincePrev = (now - prevMatchDate) / (1000 * 60 * 60);
+        const prevMatchDate = DateTime.fromISO(`${prevMatch.date}T${prevMatch.time}:00`, { zone: 'Europe/Prague' });
+        const hoursSincePrev = now.diff(prevMatchDate, 'hours').hours;
 
         // Result has to be visible for at least 24 hours
         if (hoursSincePrev < MIN_RESULT_HOURS) {
@@ -85,8 +86,8 @@ function findActiveMatch(matches) {
 
     // Minimal result time has been satisfied
     if (nextMatch) {
-        const nextMatchDate = new Date(`${nextMatch.date}T${nextMatch.time}:00`);
-        const daysUntilNext = (nextMatchDate - now) / (1000 * 60 * 60 * 24);
+        const nextMatchDate = DateTime.fromISO(`${nextMatch.date}T${nextMatch.time}:00`, { zone: 'Europe/Prague' });;
+        const daysUntilNext = nextMatchDate.diff(now, 'days').days;
 
         // Check how long until next match
         if (daysUntilNext <= DAYS_BEFORE_NEXT_MATCH) {
@@ -101,7 +102,7 @@ function findActiveMatch(matches) {
 
 function renderHeroMatch(match) {
     const container = document.getElementById('active-match-container');
-    const matchDate = new Date(`${match.date}T${match.time}:00`);
+    const matchDate = DateTime.fromISO(`${match.date}T${match.time}:00`, { zone: 'Europe/Prague' });
     container.innerHTML = `
     <div id="dynamic-state-area" class="state-area"></div>
     <div class="match-card">
@@ -117,7 +118,7 @@ function renderHeroMatch(match) {
         </div>
       </div>
       <div class="match-meta">
-        <span>📅 ${matchDate.toLocaleDateString('cs-CZ')}</span>
+        <span>📅 ${matchDate.toFormat('d. M. yyyy')}</span>
         <span>⏱️ ${match.time}</span>
         <span>📍 ${match.location}</span>
       </div>
@@ -130,34 +131,41 @@ function renderHeroMatch(match) {
 }
 
 function updateMatchState(match, matchDate) {
-    const now = new Date();
+    const now = DateTime.now().setZone('Europe/Prague');
     const stateArea = document.getElementById('dynamic-state-area');
     if (!stateArea) return;
+
     if (match.homeScore !== null) {
         stateArea.innerHTML = `<div class="state-label">VÝSLEDEK</div><div class="huge-text">${match.homeScore} : ${match.awayScore}</div>`;
+        if (heroInterval) clearInterval(heroInterval);
         return;
     }
-    const diff = matchDate - now;
+    const diff = matchDate.diff(now, ['days', 'hours', 'minutes', 'seconds']);
+
     if (diff <= 0) {
         stateArea.innerHTML = `<div class="huge-text live-text">HRAJEME!</div>`;
         return;
     }
-    const d = Math.floor(diff / 864e5), h = Math.floor((diff / 36e5) % 24), m = Math.floor((diff / 6e4) % 60),
-        s = Math.floor((diff / 1e3) % 60);
+    const duration = diff.toObject();
+    const d = Math.floor(duration.days) || 0;
+    const h = Math.floor(duration.hours) || 0;
+    const m = Math.floor(duration.minutes) || 0;
+    const s = Math.floor(duration.seconds) || 0;
+
     stateArea.innerHTML = `<div class="state-label">VÝKOP ZA</div><div class="huge-text">${d > 0 ? d + 'd ' : ''}${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}</div>`;
 }
 
 function renderSchedule(matches, activeMatch) {
     const container = document.getElementById('schedule-container');
     let html = '';
-    const now = new Date();
+    const now = DateTime.now().setZone('Europe/Prague');
 
     matches.forEach(match => {
-        const matchDate = new Date(`${match.date}T${match.time}:00`);
+        const matchDate = DateTime.fromISO(`${match.date}T${match.time}:00`, { zone: 'Europe/Prague' });
         const isPlayed = match.homeScore !== null;
 
         // Calculate match state
-        const diff = matchDate - now;
+        const diff = matchDate.diff(now);
         const isLive = diff <= 0 && !isPlayed;
 
         let scoreStr = 'VS';
@@ -197,7 +205,7 @@ function renderSchedule(matches, activeMatch) {
 }
 
 function formatDateShort(dateObj) {
-    return dateObj.toLocaleDateString('cs-CZ', {day: 'numeric', month: 'numeric'});
+    return dateObj.toFormat('d. M.');
 }
 
 // --- VIEWPORT LOCKING LOGIC ---
@@ -276,21 +284,21 @@ function runDebugMode(matches) {
 
         const originalMatch = matches[currentIndex];
         let fakeMatch = {...originalMatch}; // Copy in order to not break original data
-        const now = new Date();
+        const now = DateTime.now().setZone('Europe/Prague');
 
         console.log(`Testing: ${fakeMatch.homeTeam} vs ${fakeMatch.awayTeam} | State: ${states[currentState]}`);
 
         if (currentState === 0) {
             // COUNTDOWN
-            const future = new Date(now.getTime() + (2 * 86400000) + (3 * 3600000));
-            fakeMatch.date = future.toISOString().split('T')[0];
-            fakeMatch.time = future.toTimeString().substring(0, 5);
+            const future = now.plus({ days: 2, hours: 3 });
+            fakeMatch.date = future.toISODate();
+            fakeMatch.time = future.toFormat('HH:mm')
             fakeMatch.homeScore = null;
             fakeMatch.awayScore = null;
         } else if (currentState === 1) {
             // LIVE
-            fakeMatch.date = now.toISOString().split('T')[0];
-            fakeMatch.time = now.toTimeString().substring(0, 5);
+            fakeMatch.date = now.toISODate();
+            fakeMatch.time = now.toFormat('HH:mm')
             fakeMatch.homeScore = null;
             fakeMatch.awayScore = null;
         } else if (currentState === 2) {
