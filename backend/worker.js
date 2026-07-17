@@ -75,7 +75,7 @@ async function validateTurnstile(token, secret, connectingIp) {
 
 // All products
 app.get('/api/products', async (c) => {
-    const { results } = await c.env.DB.prepare('SELECT * FROM products ORDER BY id DESC').all()
+    const { results } = await c.env.DB.prepare('SELECT * FROM products ORDER BY position ASC, id DESC').all()
     return c.json(results)
 })
 
@@ -399,6 +399,21 @@ app.post('/admin/api/products', async (c) => {
     await logAction(c.env.DB, adminEmail, 'CREATE', 'PRODUCT', productId, { name, price })
 
     return c.json({ success: true, productId })
+})
+
+// Reorder products
+app.put('/admin/api/products/reorder', async (c) => {
+    const { items } = await c.req.json();
+    const adminEmail = c.get('adminEmail');
+
+    const stmts = items.map(item =>
+        c.env.DB.prepare('UPDATE products SET position = ? WHERE id = ?').bind(item.position, item.id)
+    );
+
+    await c.env.DB.batch(stmts);
+    await logAction(c.env.DB, adminEmail, 'REORDER', 'PRODUCTS', null, { items_moved: items.length });
+
+    return c.json({ success: true });
 })
 
 // Edit existing product
