@@ -10,7 +10,8 @@ CREATE TABLE products (
     description TEXT,
     image_url TEXT,
     gallery_urls TEXT,
-    sizes TEXT
+    sizes TEXT,
+    position INTEGER DEFAULT 0
 );
 
 CREATE TABLE orders (
