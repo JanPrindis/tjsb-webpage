@@ -46,3 +46,9 @@ export function clearCart() {
     localStorage.removeItem('tjsb_cart');
     updateCartCount();
 }
+
+window.addEventListener('pageshow', (event) => {
+    if (event.persisted) {
+        updateCartCount();
+    }
+});

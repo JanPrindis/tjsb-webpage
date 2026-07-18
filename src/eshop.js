@@ -1,16 +1,9 @@
-import { getCart } from './cartManager.js';
+import { updateCartCount } from './cartManager.js';
 import { sanitize } from "./sanitize.js";
 
 document.addEventListener('DOMContentLoaded', () => {
     loadProducts();
-
-    const cart = getCart();
-    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-    const cartCountElem = document.getElementById('cart-count');
-    
-    if (cartCountElem) {
-        cartCountElem.textContent = totalItems;
-    }
+    updateCartCount();
 });
 
 async function loadProducts() {
