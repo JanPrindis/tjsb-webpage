@@ -166,12 +166,6 @@ function renderDetail(product, container) {
     // Lightbox
     const lightbox = document.getElementById('image-lightbox');
     const lightboxImg = document.getElementById('lightbox-img');
-    const lightboxClose = document.querySelector('.lightbox-close');
-
-    lightboxClose.onclick = () => lightbox.classList.remove('active');
-    lightbox.onclick = (e) => {
-        if (e.target !== lightboxImg) lightbox.classList.remove('active');
-    };
 
     const productImages = container.querySelectorAll('.product-detail-img-zone img');
     productImages.forEach(img => {

@@ -313,8 +313,16 @@ window.changeOrderStatus = async (id, status) => {
 }
 
 function initModals() {
+    const orderModal = document.getElementById('order-modal');
+
     document.getElementById('btn-close-modal').addEventListener('click', () => {
-        document.getElementById('order-modal').style.display = 'none';
+        orderModal.style.display = 'none';
+    });
+
+    orderModal.addEventListener('click', (e) => {
+        if (e.target === orderModal) {
+            orderModal.style.display = 'none';
+        }
     });
 }
 
@@ -336,19 +344,27 @@ function customConfirm(title, message, okText = 'Potvrdit', okClass = 'btn-actio
 
         modal.style.display = 'flex';
 
+        const onOk = () => { cleanup(); resolve(true); };
+        const onCancel = () => { cleanup(); resolve(false); };
+
+        const onOutsideClick = (e) => {
+            if (e.target === modal) {
+                onCancel();
+            }
+        };
+
         const cleanup = () => {
             modal.style.display = 'none';
             btnOk.removeEventListener('click', onOk);
             btnCancel.removeEventListener('click', onCancel);
             btnClose.removeEventListener('click', onCancel);
+            modal.removeEventListener('click', onOutsideClick);
         };
-
-        const onOk = () => { cleanup(); resolve(true); };
-        const onCancel = () => { cleanup(); resolve(false); };
 
         btnOk.addEventListener('click', onOk);
         btnCancel.addEventListener('click', onCancel);
         btnClose.addEventListener('click', onCancel);
+        modal.addEventListener('click', onOutsideClick);
     });
 }
 
