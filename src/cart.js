@@ -4,25 +4,54 @@ import { sanitize } from "./sanitize.js";
 
 let turnstileToken = '';
 
-window.turnstileSuccess = function(token) {
+function turnstileSuccess(token) {
     turnstileToken = token;
     const btn = document.getElementById('submitOrderBtn');
+    if (btn) {
+        btn.disabled = false;
+        btn.style.opacity = 1;
+        btn.style.cursor = 'pointer';
+    }
+}
 
-    // Unlock the button
-    btn.disabled = false;
-    btn.style.opacity = 1;
-    btn.style.cursor = 'pointer';
-};
-
-window.turnstileExpired = function() {
+function turnstileExpired() {
     turnstileToken = '';
     const btn = document.getElementById('submitOrderBtn');
+    if (btn) {
+        btn.disabled = true;
+        btn.style.opacity = 0.5;
+        btn.style.cursor = 'not-allowed';
+    }
+}
 
-    // Re-lock the button
-    btn.disabled = true;
-    btn.style.opacity = 0.5;
-    btn.style.cursor = 'not-allowed';
-};
+function initTurnstile() {
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const siteKey = isLocalhost ? '1x00000000000000000000AA' : '0x4AAAAAADvkBDE5joAg27tu';
+
+    const renderWidget = () => {
+        const widgetEl = document.getElementById('turnstile-widget');
+        if (!widgetEl) return;
+
+        turnstile.render('#turnstile-widget', {
+            sitekey: siteKey,
+            theme: 'dark',
+            callback: turnstileSuccess,
+            'expired-callback': turnstileExpired,
+            'error-callback': turnstileExpired
+        });
+    };
+
+    if (window.turnstile) {
+        renderWidget();
+    } else {
+        const tsScript = document.createElement('script');
+        tsScript.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+        tsScript.async = true;
+        tsScript.defer = true;
+        tsScript.onload = renderWidget;
+        document.head.appendChild(tsScript);
+    }
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     updateCartCount();
@@ -30,6 +59,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const form = document.getElementById('checkout-form');
     if (form) form.addEventListener('submit', handleCheckoutSubmit);
+
+    initTurnstile();
 });
 
 function renderCartPage() {

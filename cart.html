@@ -86,15 +86,6 @@
   </div>
 </main>
 
-
-<script>
-  const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-  const siteKey = isLocalhost
-          ? '1x00000000000000000000AA'  // Dummy key
-          : '0x4AAAAAADvkBDE5joAg27tu'; // Sitekey
-  document.getElementById('turnstile-widget').setAttribute('data-sitekey', siteKey);
-</script>
-<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <script type="module" src="/src/cart.js"></script>
 <script>document.body.classList.add('loaded');</script>
 
