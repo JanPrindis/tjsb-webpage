@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { jwtVerify, createRemoteJWKSet } from 'jose'
-import { sendOrderConfirmation, sendUncollectedEmail, sendCustomerCancelEmail, sendAdminCancelEmail } from "../src/email.js";
+import { sendOrderConfirmation, sendUncollectedEmail, sendCustomerCancelEmail, sendAdminCancelEmail, sendReadyEmail } from "../src/email.js";
 import { OrderStatus } from "../src/constants.js";
 
 const app = new Hono()
@@ -539,6 +539,10 @@ app.put('/admin/api/orders/:id/status', async (c) => {
     if (status === OrderStatus.CANCELED) {
         c.executionCtx.waitUntil(
             sendAdminCancelEmail(c.env, id, currentOrder.customer_name, currentOrder.customer_email)
+        )
+    } else if (status === OrderStatus.READY) {
+        c.executionCtx.waitUntil(
+            sendReadyEmail(c.env, id, currentOrder.customer_name, currentOrder.customer_email)
         )
     }
 

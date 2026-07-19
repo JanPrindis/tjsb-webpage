@@ -190,3 +190,42 @@ export async function sendAdminCancelEmail(env, orderId, name, email) {
     `;
     return await sendEmail(env, email, name, subject, htmlContent);
 }
+
+// ============================================
+// Order Ready for Pickup template
+// ============================================
+export async function sendReadyEmail(env, orderId, name, email) {
+    const subject = `Tvoje rezervace #${orderId} je připravena! | TJ Sokol Bohuňovice`;
+
+    const htmlContent = `
+        <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
+            <div style="background-color: #28a745; color: #fff; padding: 20px; text-align: center;">
+                <h1 style="margin: 0; font-size: 24px;">Máme pro tebe připravený merch!</h1>
+            </div>
+            <div style="padding: 30px;">
+                <p>Ahoj,</p>
+                <p>skvělá zpráva! Tvá rezervace <strong>#${orderId}</strong> je nachystaná k vyzvednutí.</p>
+
+                <div style="background-color: #f9f9f9; padding: 15px; border-left: 4px solid #3498db; margin: 25px 0;">
+                    <strong style="display: block; margin-bottom: 5px;">Co se bude dít teď?</strong>
+                    Během chvíle se ti někdo z nás ozve <strong>telefonicky nebo přes SMS</strong> a domluvíme se na přesném čase předání <a href="https://maps.app.goo.gl/NobZxh7FnxWYCYfz9" target="_blank" style="color: #3498db; text-decoration: underline;">u nás na hřišti</a>.
+                    <br><br>
+                    <span style="font-size: 0.9em; color: #555;">Pokud máš u objednávky uvedeno špatné číslo, tak se nám prosím ozvi přímo přes naše sociální sítě.</span>
+                </div>
+
+                <div style="background-color: #fff3cd; color: #856404; padding: 15px; border-radius: 4px; border: 1px solid #ffeeba; text-align: center; margin-bottom: 25px;">
+                    <strong>Upozornění:</strong> Na vyzvednutí merche máš <strong>7 dní</strong>. Pokud si ho do té doby nevyzvedneš, bude tvá rezervace automaticky zrušena a zboží vrátíme zpět do prodeje.
+                </div>
+                
+                ${socialContactHtml}
+                
+                <hr style="border: none; border-top: 1px dashed #ccc; margin: 40px 0 20px 0;">
+                <div style="background-color: #f1f1f1; padding: 10px; text-align: center; font-size: 11px; color: #999; border-radius: 4px;">
+                    Toto je automaticky generovaná zpráva, prosíme, neodpovídejte na ni.
+                </div>
+            </div>
+        </div>
+    `;
+
+    return await sendEmail(env, email, name, subject, htmlContent);
+}
