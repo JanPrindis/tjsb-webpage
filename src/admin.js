@@ -196,6 +196,7 @@ window.openOrderModal = async (id) => {
     const actions = document.getElementById('modal-order-actions');
 
     body.innerHTML = '<div class="loader">Načítám položky...</div>';
+    actions.innerHTML = '';
 
     try {
         const res = await apiFetch(`/admin/api/orders/${id}/items`);
@@ -259,7 +260,25 @@ window.openOrderModal = async (id) => {
 }
 
 window.changeOrderStatus = async (id, status) => {
-    if (status === 'CANCELED' && !confirm('Opravdu stornovat objednávku?')) return;
+    if (status === 'CANCELED') {
+        const confirmed = await customConfirm(
+            'Stornovat objednávku?',
+            'Opravdu chceš stornovat tuto objednávku?\n\nZákazník bude automaticky informován e-mailem.',
+            'Ano, stornovat',
+            'btn-action-danger'
+        );
+        if (!confirmed) return;
+    }
+
+    if (status === 'READY') {
+        const confirmed = await customConfirm(
+            'Označit jako připravené?',
+            'Opravdu chceš objednávku označit jako připravenou k vyzvednutí?\n\nZákazníkovi se automaticky odešle informační e-mail a začne běžet lhůta 7 dní na vyzvednutí.',
+            'Ano, je připravena',
+            'btn-action-success'
+        );
+        if (!confirmed) return;
+    }
 
     try {
         const response = await apiFetch(`/admin/api/orders/${id}/status`, {
@@ -296,6 +315,40 @@ window.changeOrderStatus = async (id, status) => {
 function initModals() {
     document.getElementById('btn-close-modal').addEventListener('click', () => {
         document.getElementById('order-modal').style.display = 'none';
+    });
+}
+
+// Custom confirmation modal
+function customConfirm(title, message, okText = 'Potvrdit', okClass = 'btn-action-danger') {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('confirm-modal');
+        const titleEl = document.getElementById('confirm-modal-title');
+        const textEl = document.getElementById('confirm-modal-text');
+        const btnOk = document.getElementById('btn-confirm-ok');
+        const btnCancel = document.getElementById('btn-confirm-cancel');
+        const btnClose = document.getElementById('btn-close-confirm');
+
+        titleEl.textContent = title;
+        textEl.textContent = message;
+        btnOk.textContent = okText;
+
+        btnOk.className = `modal-btn ${okClass}`;
+
+        modal.style.display = 'flex';
+
+        const cleanup = () => {
+            modal.style.display = 'none';
+            btnOk.removeEventListener('click', onOk);
+            btnCancel.removeEventListener('click', onCancel);
+            btnClose.removeEventListener('click', onCancel);
+        };
+
+        const onOk = () => { cleanup(); resolve(true); };
+        const onCancel = () => { cleanup(); resolve(false); };
+
+        btnOk.addEventListener('click', onOk);
+        btnCancel.addEventListener('click', onCancel);
+        btnClose.addEventListener('click', onCancel);
     });
 }
 
@@ -400,6 +453,7 @@ window.editProduct = (id) => {
 async function handleProductSave(e) {
     e.preventDefault();
     const btn = document.getElementById('btn-save-product');
+    const cancelBtn = document.getElementById('btn-cancel-edit');
     const status = document.getElementById('form-status');
 
     const originalText = btn.textContent;
@@ -407,6 +461,12 @@ async function handleProductSave(e) {
     btn.textContent = 'Ukládám produkt... ⏳';
     btn.style.opacity = '0.7';
     btn.style.cursor = 'wait';
+
+    if (cancelBtn) {
+        cancelBtn.disabled = true;
+        cancelBtn.style.opacity = '0.5';
+        cancelBtn.style.cursor = 'not-allowed';
+    }
 
     const id = document.getElementById('prod-id').value;
     const isEdit = id !== '';
@@ -477,8 +537,8 @@ async function handleProductSave(e) {
 
     } catch (e) {
         if (e.message !== 'Session expired') {
-            showToast('Chyba při ukládání', error.message, 'error');
-            status.innerHTML = `<span style="color: #ff4d4d;">${error.message}</span>`;
+            showToast('Chyba při ukládání', e.message, 'error');
+            status.innerHTML = `<span style="color: #ff4d4d;">${e.message}</span>`;
         }
     } finally {
         status.innerHTML = '';
@@ -486,6 +546,12 @@ async function handleProductSave(e) {
         btn.textContent = originalText;
         btn.style.opacity = '1';
         btn.style.cursor = 'pointer';
+
+        if (cancelBtn) {
+            cancelBtn.disabled = false;
+            cancelBtn.style.opacity = '1';
+            cancelBtn.style.cursor = 'pointer';
+        }
     }
 }
 
@@ -493,7 +559,14 @@ async function handleProductDelete() {
     const id = document.getElementById('prod-id').value;
     if (!id) return;
 
-    if (confirm('VAROVÁNÍ: Opravdu chcete produkt smazat? Akce je nevratná!')) {
+    const confirmed = await customConfirm(
+        'Smazat produkt?',
+        'VAROVÁNÍ: Opravdu chceš tento produkt smazat?\nAkce je trvalá a nevratná!',
+        'Trvale smazat',
+        'btn-action-danger'
+    );
+
+    if (confirmed) {
         try {
             await apiFetch(`/admin/api/products/${id}`, { method: 'DELETE' });
             closeProductForm();
