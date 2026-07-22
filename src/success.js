@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const orderDataStr = sessionStorage.getItem('tjsb_last_order');
 
     if (!orderDataStr) {
-        window.location.href = '/eshop.html';
+        window.location.href = '/fanshop';
         return;
     }
 
@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <p style="color: rgba(255,255,255,0.6); font-size: 0.9rem; margin-bottom: 1.5rem;">
                 Až pro tebe věci nachystáme, ozveme se ti na zadaný e-mail nebo telefon.
             </p>
-            <a href="/eshop.html" class="btn-action-primary" style="text-decoration: none; display: inline-block;">Vrátit se do fanshopu</a>
+            <a href="/fanshop" class="btn-action-primary" style="text-decoration: none; display: inline-block;">Vrátit se do fanshopu</a>
         </div>
     `;
 

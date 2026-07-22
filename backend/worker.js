@@ -12,8 +12,8 @@ const app = new Hono()
 app.use('/*', cors({
     origin: (origin) => {
         const allowedOrigins = [
+            'https://tjsbfotbal.cz',
             'https://www.tjsbfotbal.cz',
-            'https://eshop.tjsbfotbal.cz',
             'http://localhost:8787',
             'http://localhost:3000'
         ];
@@ -114,7 +114,7 @@ app.post('/api/orders', async (c) => {
 
     // Frontend validation
     if (!customer_name || !customer_email || !customer_phone || !items || items.length === 0) {
-        return c.json({ error: 'Neplatná data objednávky' }, 400)
+        return c.json({ error: 'Neplatná data rezervace' }, 400)
     }
 
     if (items.length > 20) {
@@ -232,7 +232,7 @@ app.get('/api/cancel', async (c) => {
     ).bind(id).first()
 
     if (!order || order.cancel_token !== token) {
-        return c.html('<div style="font-family: sans-serif; text-align: center; margin-top: 50px;"><h1 style="color: #dc3545;">Přístup odepřen</h1><p>Tento odkaz není platný pro zrušení dané objednávky.</p></div>', 403)
+        return c.html('<div style="font-family: sans-serif; text-align: center; margin-top: 50px;"><h1 style="color: #dc3545;">Přístup odepřen</h1><p>Tento odkaz není platný pro zrušení dané rezervace.</p></div>', 403)
     }
 
     if (order.status === OrderStatus.CANCELED || order.status === OrderStatus.CANCELED_BY_USER) {
@@ -240,7 +240,7 @@ app.get('/api/cancel', async (c) => {
     }
 
     if (order.status !== OrderStatus.PENDING) {
-        return c.html('<div style="font-family: sans-serif; text-align: center; margin-top: 50px;"><h1>Nelze zrušit</h1><p>Tuto objednávku již nelze automaticky stornovat. Pravděpodobně se již připravuje, nebo byla vyřízena. Kontaktujte nás prosím přímo.</p></div>', 400)
+        return c.html('<div style="font-family: sans-serif; text-align: center; margin-top: 50px;"><h1>Nelze zrušit</h1><p>Tuto rezervaci již nelze automaticky stornovat. Pravděpodobně se již připravuje, nebo byla vyřízena. Kontaktujte nás prosím přímo.</p></div>', 400)
     }
 
     await c.env.DB.prepare(
@@ -255,7 +255,7 @@ app.get('/api/cancel', async (c) => {
         <div style="font-family: Arial, sans-serif; text-align: center; margin-top: 10vh; color: #111a3b;">
             <div style="font-size: 4rem; margin-bottom: 1rem;">🗑️</div>
             <h1 style="color: #dc3545;">Rezervace byla úspěšně stornována</h1>
-            <a href="/eshop.html" style="display: inline-block; margin-top: 2rem; padding: 0.8rem 1.5rem; background: #111a3b; color: #ffd700; text-decoration: none; border-radius: 6px; font-weight: bold;">Zpět na e-shop</a>
+            <a href="/fanshop.html" style="display: inline-block; margin-top: 2rem; padding: 0.8rem 1.5rem; background: #111a3b; color: #ffd700; text-decoration: none; border-radius: 6px; font-weight: bold;">Zpět na e-shop</a>
         </div>
     `)
 })
@@ -526,11 +526,11 @@ app.put('/admin/api/orders/:id/status', async (c) => {
     ).bind(id).first()
 
     if (!currentOrder) {
-        return c.json({ error: 'Objednávka nenalezena.' }, 404)
+        return c.json({ error: 'Rezervace nenalezena.' }, 404)
     }
 
     if (currentOrder.status === OrderStatus.CANCELED_BY_USER || currentOrder.status === OrderStatus.CANCELED_UNCOLLECTED) {
-        return c.json({ error: 'Objednávku nelze změnit, protože již byla stornována zákazníkem, nebo nevyzvednuta.' }, 409)
+        return c.json({ error: 'Rezervaci nelze změnit, protože již byla stornována zákazníkem, nebo nevyzvednuta.' }, 409)
     }
 
     await c.env.DB.prepare('UPDATE orders SET status = ?, status_updated_at = CURRENT_TIMESTAMP WHERE id = ?').bind(status, id).run()
@@ -563,6 +563,10 @@ app.onError((err, c) => {
     console.error('API Error:', err)
     return c.json({ error: 'Chyba serveru' }, 500)
 })
+
+// Redirect old url to new path
+app.get('/eshop', (c) => c.redirect('/fanshop', 301))
+app.get('/eshop.html', (c) => c.redirect('/fanshop', 301))
 
 // Unknown redirect to index
 app.get('*', async (c, next) => {

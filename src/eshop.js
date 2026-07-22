@@ -34,7 +34,7 @@ async function loadProducts() {
 
             const cardHTML = `
                 <div class="product-card">
-                    <a href="/product.html?id=${product.id}">
+                    <a href="/product?id=${product.id}">
                         <div class="product-image-wrapper">
                             <img src="${imageSrc}" alt="${sanitize(product.name)}" onerror="this.onerror=null;this.src='${placeholderSvg}';">
                         </div>

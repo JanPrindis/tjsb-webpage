@@ -14,15 +14,15 @@
 <header class="eshop-header">
   <div class="header-container">
     <div class="header-left">
-      <a href="/eshop.html" class="back-home-link">← Zpět do fanshopu</a>
+      <a href="/fanshop" class="back-home-link">← Zpět do fanshopu</a>
     </div>
     <div class="header-center">
-      <a href="/eshop.html">
+      <a href="/fanshop">
         <img src="/Logo_100.svg" alt="Sokol Bohuňovice" class="header-logo">
       </a>
     </div>
     <div class="header-right">
-      <a href="/cart.html" class="cart-btn">
+      <a href="/cart" class="cart-btn">
         🛒 Košík (<span id="cart-count">0</span>)
       </a>
     </div>
@@ -116,10 +116,17 @@
   <p>Svá práva můžete uplatnit na e-mailu <a href="mailto:frycaka@gmail.com" style="color: var(--yellow, #ffd700); text-decoration: underline;">frycaka@gmail.com</a>. Dozorovým úřadem v České republice je Úřad pro ochranu osobních údajů.</p>
 
   <h3 style="color: var(--yellow, #ffd700); margin-top: 2rem;">10. Změny těchto zásad</h3>
-  <p>Tyto zásady můžeme přiměřeně aktualizovat, například při změně fungování rezervačního systému nebo používaných služeb. Aktuální verze bude vždy zveřejněna na webu <a href="/gdpr.html" target="_self" style="font-weight: bold; color: var(--yellow, #ffd700)">tjsbfotbal.cz/gdpr</a>.</p>
+  <p>Tyto zásady můžeme přiměřeně aktualizovat, například při změně fungování rezervačního systému nebo používaných služeb. Aktuální verze bude vždy zveřejněna na webu <a href="/gdpr" target="_self" style="font-weight: bold; color: var(--yellow, #ffd700)">tjsbfotbal.cz/gdpr</a>.</p>
 </main>
 
 <script>document.body.classList.add('loaded');</script>
+
+<script type="module">
+  import { updateCartCount } from '/src/cartManager.js';
+  document.addEventListener('DOMContentLoaded', () => {
+    updateCartCount();
+  });
+</script>
 
 <footer class="site-footer">
   <div class="footer-content">

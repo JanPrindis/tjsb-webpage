@@ -13,7 +13,7 @@ export default defineConfig({
         rollupOptions: {
             input: {
                 main: resolve(__dirname, 'index.html'),
-                eshop: resolve(__dirname, 'eshop.html'),
+                fanshop: resolve(__dirname, 'fanshop.html'),
                 product: resolve(__dirname, 'product.html'),
                 cart: resolve(__dirname, 'cart.html'),
                 success: resolve(__dirname, 'success.html'),

@@ -74,7 +74,7 @@ function renderCartPage() {
         tableContainer.innerHTML = `
             <div class="empty-cart-box">
                 <p>Tvůj košík je prázdný.</p>
-                <a href="/eshop.html" class="btn-action-primary" style="display:inline-block; text-decoration:none;">Pojďme to napravit!</a>
+                <a href="/fanshop" class="btn-action-primary" style="display:inline-block; text-decoration:none;">Pojďme to napravit!</a>
             </div>
         `;
         form.style.display = 'none';
@@ -198,7 +198,7 @@ async function handleCheckoutSubmit(e) {
         sessionStorage.setItem('tjsb_last_order', JSON.stringify(orderSummary));
 
         clearCart();
-        window.location.href = '/success.html';
+        window.location.href = '/success';
 
     } catch (error) {
         showToast('Chyba rezervace', error.message, 'error');

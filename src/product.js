@@ -87,7 +87,7 @@ function renderDetail(product, container) {
                     ${sizesArray.map(s => `<option value="${s}">${s}</option>`).join('')}
                 </select>
                 <br>
-                <a href="/velikosti.html" class="size-link">Tabulka velikostí</a>
+                <a href="/velikosti" class="size-link">Tabulka velikostí</a>
             </div>
         `;
     }
