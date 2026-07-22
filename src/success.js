@@ -28,11 +28,11 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="success-header">
             <div class="success-icon">✅</div>
             <h2 style="color: var(--yellow, #ffd700); margin-bottom: 0.5rem;">Děkujeme za rezervaci, ${sanitize(order.customerName.split(' ')[0])}!</h2>
-            <p style="color: rgba(255,255,255,0.8); margin: 0;">Shrnutí rezervace jsme vám poslali na e-mail.</p>
+            <p style="color: rgba(255,255,255,0.8); margin: 0;">Shrnutí rezervace jsme ti poslali na e-mail.</p>
         </div>
 
         <div class="summary-section">
-            <h3>Vaše údaje</h3>
+            <h3>Tvoje údaje</h3>
             <p style="color: rgba(255,255,255,0.8); margin: 0;">
                 Jméno: ${sanitize(order.customerName)}<br>
                 E-mail: ${sanitize(order.customerEmail)}<br>
@@ -46,15 +46,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 ${itemsHtml}
             </ul>
             <div class="summary-total">
-                Celkem k úhradě: ${order.totalPrice} Kč
+                Celkem k úhradě při vyzvednutí: ${order.totalPrice} Kč
             </div>
         </div>
 
         <div style="text-align: center; margin-top: 2.5rem;">
             <p style="color: rgba(255,255,255,0.6); font-size: 0.9rem; margin-bottom: 1.5rem;">
-                Až pro vás věci nachystáme, ozveme se vám na zadaný e-mail nebo telefon.
+                Až pro tebe věci nachystáme, ozveme se ti na zadaný e-mail nebo telefon.
             </p>
-            <a href="/eshop.html" class="btn-action-primary" style="text-decoration: none; display: inline-block;">Vrátit se do e-shopu</a>
+            <a href="/eshop.html" class="btn-action-primary" style="text-decoration: none; display: inline-block;">Vrátit se do fanshopu</a>
         </div>
     `;
 

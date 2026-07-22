@@ -30,7 +30,7 @@
 
 <main class="eshop-main">
     <div class="admin-tabs">
-        <button class="tab-btn active" data-tab="tab-orders">Objednávky</button>
+        <button class="tab-btn active" data-tab="tab-orders">Rezervace</button>
         <button class="tab-btn" data-tab="tab-products">Produkty</button>
         <button class="tab-btn" data-tab="tab-audit">Audit Log</button>
     </div>
@@ -39,14 +39,14 @@
 
         <div id="tab-orders" class="tab-pane active">
             <div class="admin-panel">
-                <h2>Přehled objednávek k vyzvednutí</h2>
+                <h2>Přehled rezervací k vyzvednutí</h2>
 
                 <div style="margin-bottom: 1.5rem;">
                     <input type="text" id="search-orders" class="eshop-input" placeholder="Hledat jméno, email, nebo ID..." style="max-width: 350px;">
                 </div>
 
                 <div id="orders-list-container">
-                    <div class="loader">Načítám objednávky...</div>
+                    <div class="loader">Načítám rezervace...</div>
                 </div>
             </div>
         </div>
@@ -138,7 +138,7 @@
     <div id="order-modal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 id="modal-order-title">Detail objednávky</h3>
+                <h3 id="modal-order-title">Detail rezervace</h3>
                 <button id="btn-close-modal" class="modal-close">✕</button>
             </div>
             <div id="modal-order-body" class="modal-body">

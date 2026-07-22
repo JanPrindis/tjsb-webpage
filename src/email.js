@@ -72,11 +72,11 @@ export async function sendOrderConfirmation(env, orderId, name, email, phone, it
             </div>
             <div style="padding: 30px 20px; border: 1px solid #eee; border-top: none; border-radius: 0 0 8px 8px;">
                 <p>Milý fanoušku/milá fanynko,</p>
-                <p>díky za tvou rezervaci týmového merche. Tvůj požadavek jsme v pořádku zapsali do systému.</p>
+                <p>děkujeme za rezervaci zboží z našeho fanshopu!</p>
                 
                 <div style="background-color: #f9f9f9; padding: 15px; border-left: 4px solid #3498db; margin: 25px 0;">
                     <strong style="display: block; margin-bottom: 5px;">Jak to bude probíhat dál?</strong>
-                    Jakmile pro tebe věci nachystáme, dáme ti vědět e-mailem nebo na tvůj telefon. <strong>Vyzvednutí a platba pak probíhá vždy osobně <a href="https://maps.app.goo.gl/NobZxh7FnxWYCYfz9" target="_blank" style="color: #3498db; text-decoration: underline;">u nás na hřišti</a>.</strong>                
+                    Jakmile pro tebe vše nachystáme, dáme ti vědět e-mailem nebo na tvůj telefon. <strong>Vyzvednutí a platba pak probíhá vždy osobně <a href="https://maps.app.goo.gl/NobZxh7FnxWYCYfz9" target="_blank" style="color: #3498db; text-decoration: underline;">u nás na hřišti</a>.</strong>                
                 </div>
 
                 <h3 style="border-bottom: 2px solid #054a88; padding-bottom: 5px; color: #054a88;">Tvoje údaje</h3>
@@ -88,7 +88,7 @@ export async function sendOrderConfirmation(env, orderId, name, email, phone, it
                     ${itemsListHtml}
                 </ul>
                 <div style="text-align: right; font-size: 1.3em; margin-top: 20px; color: #054a88;">
-                    <strong>Celkem k úhradě: ${totalPrice} Kč</strong>
+                    <strong>Celkem k úhradě při vyzvednutí: ${totalPrice} Kč</strong>
                 </div>
                 
                 ${socialContactHtml}
@@ -99,7 +99,7 @@ export async function sendOrderConfirmation(env, orderId, name, email, phone, it
                     <a href="${cancelLink}" style="color: #dc3545; font-weight: bold; display: inline-block; margin-top: 10px; margin-bottom: 10px;">Zrušit rezervaci</a>
                 </p>
                 <div style="background-color: #f1f1f1; padding: 10px; text-align: center; font-size: 11px; color: #999; border-radius: 4px;">
-                    Toto je automaticky generovaná zpráva, prosíme, neodpovídejte na ni. V případě dotazů se nám ozvěte na naše oficiální kontakty.
+                    Toto je automaticky generovaná zpráva, prosíme, neodpovídej na ni.
                 </div>
             </div>
         </div>
@@ -112,24 +112,24 @@ export async function sendOrderConfirmation(env, orderId, name, email, phone, it
 // Stale order cancellation template
 // ============================================
 export async function sendUncollectedEmail(env, orderId, name, email) {
-    const subject = `Storno objednávky #${orderId} (Nevyzvednuto) | TJ Sokol Bohuňovice`;
+    const subject = `Storno rezervace #${orderId} (Nevyzvednuto) | TJ Sokol Bohuňovice`;
 
     const htmlContent = `
         <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
             <div style="background-color: #dc3545; color: #fff; padding: 20px; text-align: center;">
-                <h1 style="margin: 0; font-size: 24px;">Zrušení objednávky</h1>
+                <h1 style="margin: 0; font-size: 24px;">Zrušení rezervace</h1>
             </div>
             <div style="padding: 30px;">
                 <p>Ahoj,</p>
-                <p>tvá objednávka na tebe čekala připravená více než týden.</p>
+                <p>tvá rezervace na tebe čekala připravená více než týden.</p>
                 <p>Jelikož sis ji nevyzvedl(a), náš systém ji <strong>automaticky stornoval</strong> a zboží bylo vráceno zpět do prodeje pro ostatní fanoušky.</p>
-                <p>Pokud o věci máš stále zájem, budeme rádi, když si vytvoříš na e-shopu novou rezervaci.</p>
+                <p>Pokud máš o rezervované zboží stále zájem, budeme rádi, když si ve fanshopu vytvoříš novou rezervaci.</p>
                 
                 ${socialContactHtml}
                 
                 <hr style="border: none; border-top: 1px dashed #ccc; margin: 40px 0 20px 0;">
                 <div style="background-color: #f1f1f1; padding: 10px; text-align: center; font-size: 11px; color: #999; border-radius: 4px;">
-                    Toto je automaticky generovaná zpráva, prosíme, neodpovídejte na ni.
+                    Toto je automaticky generovaná zpráva, prosíme, neodpovídej na ni.
                 </div>
             </div>
         </div>
@@ -157,7 +157,7 @@ export async function sendCustomerCancelEmail(env, orderId, name, email) {
                 
                 <hr style="border: none; border-top: 1px dashed #ccc; margin: 40px 0 20px 0;">
                 <div style="background-color: #f1f1f1; padding: 10px; text-align: center; font-size: 11px; color: #999; border-radius: 4px;">
-                    Toto je automaticky generovaná zpráva, prosíme, neodpovídejte na ni.
+                    Toto je automaticky generovaná zpráva, prosíme, neodpovídej na ni.
                 </div>
             </div>
         </div>
@@ -183,7 +183,7 @@ export async function sendAdminCancelEmail(env, orderId, name, email) {
                 
                 <hr style="border: none; border-top: 1px dashed #ccc; margin: 40px 0 20px 0;">
                 <div style="background-color: #f1f1f1; padding: 10px; text-align: center; font-size: 11px; color: #999; border-radius: 4px;">
-                    Toto je automaticky generovaná zpráva, prosíme, neodpovídejte na ni.
+                    Toto je automaticky generovaná zpráva, prosíme, neodpovídej na ni.
                 </div>
             </div>
         </div>
@@ -200,7 +200,7 @@ export async function sendReadyEmail(env, orderId, name, email) {
     const htmlContent = `
         <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
             <div style="background-color: #28a745; color: #fff; padding: 20px; text-align: center;">
-                <h1 style="margin: 0; font-size: 24px;">Máme pro tebe připravený merch!</h1>
+                <h1 style="margin: 0; font-size: 24px;">Máme pro tebe připravený zboží!</h1>
             </div>
             <div style="padding: 30px;">
                 <p>Ahoj,</p>
@@ -210,18 +210,18 @@ export async function sendReadyEmail(env, orderId, name, email) {
                     <strong style="display: block; margin-bottom: 5px;">Co se bude dít teď?</strong>
                     Během chvíle se ti někdo z nás ozve <strong>telefonicky nebo přes SMS</strong> a domluvíme se na přesném čase předání <a href="https://maps.app.goo.gl/NobZxh7FnxWYCYfz9" target="_blank" style="color: #3498db; text-decoration: underline;">u nás na hřišti</a>.
                     <br><br>
-                    <span style="font-size: 0.9em; color: #555;">Pokud máš u objednávky uvedeno špatné číslo, tak se nám prosím ozvi přímo přes naše sociální sítě.</span>
+                    <span style="font-size: 0.9em; color: #555;">Pokud máš u rezervace uvedeno špatné číslo, tak se nám prosím ozvi přímo přes naše sociální sítě.</span>
                 </div>
 
                 <div style="background-color: #fff3cd; color: #856404; padding: 15px; border-radius: 4px; border: 1px solid #ffeeba; text-align: center; margin-bottom: 25px;">
-                    <strong>Upozornění:</strong> Na vyzvednutí merche máš <strong>7 dní</strong>. Pokud si ho do té doby nevyzvedneš, bude tvá rezervace automaticky zrušena a zboží vrátíme zpět do prodeje.
+                    <strong>Upozornění:</strong> Na vyzvednutí rezervovaného zboží máš <strong>7 dní</strong>. Pokud si ho do té doby nevyzvedneš, bude tvá rezervace automaticky zrušena a zboží vrátíme zpět do prodeje.
                 </div>
                 
                 ${socialContactHtml}
                 
                 <hr style="border: none; border-top: 1px dashed #ccc; margin: 40px 0 20px 0;">
                 <div style="background-color: #f1f1f1; padding: 10px; text-align: center; font-size: 11px; color: #999; border-radius: 4px;">
-                    Toto je automaticky generovaná zpráva, prosíme, neodpovídejte na ni.
+                    Toto je automaticky generovaná zpráva, prosíme, neodpovídej na ni.
                 </div>
             </div>
         </div>

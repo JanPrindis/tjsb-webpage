@@ -101,7 +101,7 @@ async function loadOrders() {
     const container = document.getElementById('orders-list-container');
     try {
         const res = await apiFetch('/admin/api/orders');
-        if (!res.ok) throw new Error('Nepodařilo se načíst objednávky.');
+        if (!res.ok) throw new Error('Nepodařilo se načíst rezervace.');
         currentOrders = await res.json();
         renderOrders();
     } catch (e) {
@@ -144,7 +144,7 @@ function renderOrders() {
     });
 
     if (filteredOrders.length === 0) {
-        container.innerHTML = '<p style="color: rgba(255,255,255,0.5);">Žádné objednávky neodpovídají hledání.</p>';
+        container.innerHTML = '<p style="color: rgba(255,255,255,0.5);">Žádné rezervace neodpovídají hledání.</p>';
         return;
     }
 
@@ -193,7 +193,7 @@ window.openOrderModal = async (id) => {
     const dbStatus = (order.status || 'PENDING').toUpperCase();
 
     document.getElementById('order-modal').style.display = 'flex';
-    document.getElementById('modal-order-title').textContent = `Objednávka #${order.id}`;
+    document.getElementById('modal-order-title').textContent = `Rezervace #${order.id}`;
     const body = document.getElementById('modal-order-body');
     const actions = document.getElementById('modal-order-actions');
 
@@ -216,7 +216,7 @@ window.openOrderModal = async (id) => {
 
         // Order info
         if (items.length === 0) {
-            html += '<p>Tato objednávka je prázdná.</p>';
+            html += '<p>Tato rezervace je prázdná.</p>';
         } else {
             html += '<div class="modal-items-wrapper"><ul class="order-items-list">';
             let total = 0;
@@ -264,8 +264,8 @@ window.openOrderModal = async (id) => {
 window.changeOrderStatus = async (id, status) => {
     if (status === 'CANCELED') {
         const confirmed = await customConfirm(
-            'Stornovat objednávku?',
-            'Opravdu chceš stornovat tuto objednávku?\n\nZákazník bude automaticky informován e-mailem.',
+            'Stornovat rezervaci?',
+            'Opravdu chceš stornovat tuto rezervaci?\n\nZákazník bude automaticky informován e-mailem.',
             'Ano, stornovat',
             'btn-action-danger'
         );
@@ -275,7 +275,7 @@ window.changeOrderStatus = async (id, status) => {
     if (status === 'READY') {
         const confirmed = await customConfirm(
             'Označit jako připravené?',
-            'Opravdu chceš objednávku označit jako připravenou k vyzvednutí?\n\nZákazníkovi se automaticky odešle informační e-mail a začne běžet lhůta 7 dní na vyzvednutí.',
+            'Opravdu chceš rezervaci označit jako připravenou k vyzvednutí?\n\nZákazníkovi se automaticky odešle informační e-mail a začne běžet lhůta 7 dní na vyzvednutí.',
             'Ano, je připravena',
             'btn-action-success'
         );
@@ -300,7 +300,7 @@ window.changeOrderStatus = async (id, status) => {
         document.getElementById('order-modal').style.display = 'none';
         await loadOrders();
         await loadAudit();
-        showToast('Stav změněn', `Stav objednávky #${id} byl úspěšně aktualizován.`, 'success');
+        showToast('Stav změněn', `Stav rezervace #${id} byl úspěšně aktualizován.`, 'success');
 
     } catch (e) {
         if (e.message !== 'Session expired') {

@@ -161,7 +161,7 @@ function renderDetail(product, container) {
             }, 1000);
 
         } else {
-            alert('Do košíku se vejde maximálně 20 položek. Pro hromadnou objednávku nás prosím kontaktujte napřímo.');
+            alert('Do košíku se vejde maximálně 20 položek. Pro hromadnou rezervaci nás prosím kontaktujte napřímo.');
         }
     });
 
