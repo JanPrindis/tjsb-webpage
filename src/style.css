@@ -134,6 +134,42 @@ body {
 }
 
 /* =========================================
+   HEADER ACTIONS (Eshop Button)
+   ========================================= */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+.btn-eshop {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 1.2rem;
+    background-color: var(--yellow);
+    color: var(--dark-blue);
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 900;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    opacity: calc(1 - var(--scroll) * 4);
+}
+
+.btn-eshop:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+
+.btn-eshop img {
+    height: 22px;
+    filter: invert(10%) sepia(30%) saturate(5000%) hue-rotate(200deg);
+}
+
+/* =========================================
    MAIN MATCH ELEMENTS
    ========================================= */
 .active-match-wrapper {
@@ -620,6 +656,26 @@ body.scrolled-deep #header-socials {
         padding-top: 130px;
     }
 
+    .header-actions {
+        gap: 1rem;
+    }
+
+    .btn-eshop {
+        padding: 0.5rem;
+        border-radius: 50%;
+        width: 42px;
+        height: 42px;
+        justify-content: center;
+    }
+
+    .btn-eshop span {
+        display: none;
+    }
+
+    .btn-eshop img {
+        height: 24px;
+    }
+
     .social-text {
         display: none;
     }
@@ -861,6 +917,10 @@ body.scrolled-deep #header-socials {
     }
 
     .scroll-indicator-wrapper {
+        display: none;
+    }
+
+    .btn-eshop {
         display: none;
     }
 }
