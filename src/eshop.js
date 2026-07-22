@@ -2,6 +2,8 @@ import { updateCartCount } from './cartManager.js';
 import { sanitize } from "./sanitize.js";
 
 document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('current-year').textContent = new Date().getFullYear().toString();
+
     loadProducts();
     updateCartCount();
 });

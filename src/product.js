@@ -5,6 +5,8 @@ import { sanitize } from './sanitize.js';
 const placeholderSvg = '/src/assets/camera.svg';
 
 document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('current-year').textContent = new Date().getFullYear().toString();
+
     updateCartCount();
     loadProductDetails();
 

@@ -1,6 +1,8 @@
 import { sanitize } from "./sanitize.js";
 
 document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('current-year').textContent = new Date().getFullYear().toString();
+
     const container = document.getElementById('success-container');
     const orderDataStr = sessionStorage.getItem('tjsb_last_order');
 

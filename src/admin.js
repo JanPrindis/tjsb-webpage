@@ -38,6 +38,8 @@ polyfill({
 window.addEventListener('touchmove', function() {}, {passive: false});
 
 document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('current-year').textContent = new Date().getFullYear().toString();
+
     initTabs();
     initModals();
 
