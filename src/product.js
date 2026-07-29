@@ -1,6 +1,6 @@
 import { addToCart, updateCartCount } from './cartManager.js';
 import { showToast } from './toast.js';
-import { sanitize } from './sanitize.js';
+import { sanitize, createSlug } from "./utils.js";
 
 const placeholderSvg = '/src/assets/camera.svg';
 
@@ -35,6 +35,13 @@ async function loadProductDetails() {
         const response = await fetch(`/api/products/${productId}`);
         if (!response.ok) throw new Error('Produkt nenalezen');
         const product = await response.json(); // 'product' is now correctly scoped to this block
+
+        // Fix the URL if needed
+        const expectedSlug = createSlug(product.name, product.id);
+        if (window.location.pathname !== expectedSlug) {
+            const newUrl = expectedSlug + window.location.search;
+            window.history.replaceState(null, '', newUrl);
+        }
 
         renderDetail(product, container);
     } catch (error) {

@@ -1,4 +1,4 @@
-import { sanitize } from './sanitize.js';
+import { sanitize } from "./utils.js";
 
 export async function sendEmail(env, toEmail, toName, subject, htmlContent) {
     if (env.ENABLE_EMAILS !== 'true') {

@@ -1,5 +1,5 @@
 import { updateCartCount } from './cartManager.js';
-import { sanitize } from "./sanitize.js";
+import { createSlug, sanitize } from "./utils.js";
 
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('current-year').textContent = new Date().getFullYear().toString();
@@ -7,15 +7,6 @@ document.addEventListener('DOMContentLoaded', () => {
     loadProducts();
     updateCartCount();
 });
-
-function createSlug(name, id) {
-    const safeName = name.toLowerCase()
-        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/(^-|-$)+/g, "");
-
-    return `/product/${safeName}-${id}`;
-}
 
 async function loadProducts() {
     const grid = document.getElementById('products-grid');

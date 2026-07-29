@@ -1,5 +1,5 @@
 import { showToast } from './toast.js';
-import { sanitize } from './sanitize.js';
+import { sanitize } from "./utils.js";
 import { OrderStatus } from "./constants.js";
 import { polyfill } from "mobile-drag-drop";
 import "mobile-drag-drop/default.css";

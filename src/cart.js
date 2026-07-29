@@ -1,6 +1,6 @@
 import { getCart, removeFromCart, updateCartCount, clearCart } from './cartManager.js';
 import { showToast } from './toast.js';
-import { sanitize } from "./sanitize.js";
+import { sanitize } from "./utils.js";
 
 let turnstileToken = '';
 

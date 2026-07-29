@@ -1,4 +1,4 @@
-import { sanitize } from "./sanitize.js";
+import { sanitize } from "./utils.js";
 
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('current-year').textContent = new Date().getFullYear().toString();
