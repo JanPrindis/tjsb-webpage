@@ -611,7 +611,7 @@ async function loadAudit() {
 
         let html = '<table class="admin-table" style="font-size: 0.9rem;"><thead><tr><th>Kdy</th><th>Kdo</th><th>Akce</th><th>Entita</th><th>Detaily</th></tr></thead><tbody>';
         logs.forEach(l => {
-            const date = new Date(l.status_updated_at.replace(' ', 'T') + 'Z').toLocaleString('cs-CZ');
+            const date = new Date(l.created_at.replace(' ', 'T') + 'Z').toLocaleString('cs-CZ');
             html += `
                 <tr>
                     <td style="white-space: nowrap;">${date}</td>
