@@ -99,7 +99,7 @@ function renderDetail(product, container) {
         <div class="product-detail-info-zone">
             <h1 class="detail-name">${sanitize(product.name)}</h1>
             <div class="detail-price">${product.price} Kč</div>
-            <p class="detail-description">${sanitize(product.description) || 'K tomuto produktu zatím nebyl přidán žádný popis.'}</p>
+            <p class="detail-description" style="white-space: pre-wrap;">${sanitize(product.description) || 'K tomuto produktu zatím nebyl přidán žádný popis.'}</p>
             
             ${sizeHTML}
             
