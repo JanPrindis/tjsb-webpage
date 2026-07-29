@@ -23,8 +23,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function loadProductDetails() {
     const container = document.getElementById('product-container');
-    const urlParams = new URLSearchParams(window.location.search);
-    const productId = urlParams.get('id');
+    const productParts = window.location.pathname.split('-');
+    const productId = productParts.pop();
 
     if (!productId) {
         container.innerHTML = '<p class="error-msg">Produkt nebyl specifikován.</p>';

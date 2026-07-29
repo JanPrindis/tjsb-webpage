@@ -8,6 +8,15 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCartCount();
 });
 
+function createSlug(name, id) {
+    const safeName = name.toLowerCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)+/g, "");
+
+    return `/product/${safeName}-${id}`;
+}
+
 async function loadProducts() {
     const grid = document.getElementById('products-grid');
     if (!grid) {
@@ -31,10 +40,11 @@ async function loadProducts() {
         products.forEach(product => {
             // Use the product image or fallback to the placeholder
             const imageSrc = product.image_url || placeholderSvg;
+            const productUrl = createSlug(product.name, product.id);
 
             const cardHTML = `
                 <div class="product-card">
-                    <a href="/product?id=${product.id}">
+                    <a href="${productUrl}">
                         <div class="product-image-wrapper">
                             <img src="${imageSrc}" alt="${sanitize(product.name)}" onerror="this.onerror=null;this.src='${placeholderSvg}';">
                         </div>

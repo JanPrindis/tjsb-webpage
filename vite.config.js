@@ -25,6 +25,17 @@ export default defineConfig({
     },
     plugins: [
         {
+            name: 'lokalni-rewrite-produktu',
+            configureServer(server) {
+                server.middlewares.use((req, res, next) => {
+                    if (req.url.startsWith('/product/')) {
+                        req.url = '/product.html';
+                    }
+                    next();
+                });
+            }
+        },
+        {
             name: 'mpa-fallback',
             configureServer(server) {
                 return () => {
