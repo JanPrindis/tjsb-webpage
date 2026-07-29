@@ -94,7 +94,7 @@ const STATUS_CONFIG = {
 };
 
 let currentOrders = [];
-let sortConfig = { column: 'created_at', direction: 'desc' };
+let sortConfig = { column: 'status_updated_at', direction: 'desc' };
 let searchQuery = '';
 
 async function loadOrders() {
@@ -156,8 +156,8 @@ function renderOrders() {
                 <tr>
                     <th class="sortable" onclick="sortOrders('id')">ID${getArrow('id')}</th>
                     <th class="sortable" onclick="sortOrders('customer_name')">Zákazník${getArrow('customer_name')}</th>
-                    <th class="sortable" onclick="sortOrders('status')">Status${getArrow('status')}</th>
-                    <th class="sortable" onclick="sortOrders('created_at')">Vytvořeno${getArrow('created_at')}</th>
+                    <th class="sortable" onclick="sortOrders('status')">Stav${getArrow('status')}</th>
+                    <th class="sortable" onclick="sortOrders('status_updated_at')">Aktualizováno${getArrow('status_updated_at')}</th>
                     <th>Akce</th>
                 </tr>
             </thead>
@@ -165,7 +165,7 @@ function renderOrders() {
     `;
 
     filteredOrders.forEach(o => {
-        const date = new Date(o.created_at.replace(' ', 'T') + 'Z').toLocaleString('cs-CZ');
+        const date = new Date(o.status_updated_at.replace(' ', 'T') + 'Z').toLocaleString('cs-CZ');
 
         const statusInfo = STATUS_CONFIG[o.status] || { text: o.status, className: 'badge-new' };
         const czStatus = statusInfo.text;
@@ -611,7 +611,7 @@ async function loadAudit() {
 
         let html = '<table class="admin-table" style="font-size: 0.9rem;"><thead><tr><th>Kdy</th><th>Kdo</th><th>Akce</th><th>Entita</th><th>Detaily</th></tr></thead><tbody>';
         logs.forEach(l => {
-            const date = new Date(l.created_at.replace(' ', 'T') + 'Z').toLocaleString('cs-CZ');
+            const date = new Date(l.status_updated_at.replace(' ', 'T') + 'Z').toLocaleString('cs-CZ');
             html += `
                 <tr>
                     <td style="white-space: nowrap;">${date}</td>
