@@ -200,7 +200,7 @@ export async function sendReadyEmail(env, orderId, name, email) {
     const htmlContent = `
         <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
             <div style="background-color: #28a745; color: #fff; padding: 20px; text-align: center;">
-                <h1 style="margin: 0; font-size: 24px;">Máme pro tebe připravený zboží!</h1>
+                <h1 style="margin: 0; font-size: 24px;">Máme pro tebe připravené zboží!</h1>
             </div>
             <div style="padding: 30px;">
                 <p>Ahoj,</p>
