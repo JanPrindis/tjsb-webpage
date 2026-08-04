@@ -1,3 +1,5 @@
+import {sanitize} from "./utils.js";
+
 const TOAST_CONFIG = {
     success: {
         icon: '✅',
@@ -24,8 +26,8 @@ export function showToast(title, message, type = 'success') {
     toast.innerHTML = `
         <div class="toast-icon">${config.icon}</div>
         <div class="toast-text">
-            <strong>${title}</strong>
-            <span>${message}</span>
+            <strong>${sanitize(title)}</strong>
+            <span>${sanitize(message)}</span>
         </div>
     `;
 
