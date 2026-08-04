@@ -647,13 +647,13 @@ export default {
 
             // Log the cleanup action
             const details = JSON.stringify({
-                deleted_orders: ordersResult.results.length,
-                deleted_logs: logsResult.results.length
+                deleted_orders: ordersResult.meta.changes,
+                deleted_logs: logsResult.meta.changes
             });
 
             await logAction(env.DB, 'system@cron', 'SYSTEM_CLEANUP', 'DATABASE', null, details);
 
-            console.log(`[CRON SUCCESS] Cleanup completed. Removed: ${ordersResult.results.length} old orders, removed: ${logsResult.results.length} old logs`);
+            console.log(`[CRON SUCCESS] Cleanup completed. Removed: ${ordersResult.meta.changes} old orders, removed: ${logsResult.meta.changes} old logs`);
 
         } catch (e) {
             console.error("[CRON ERROR] Error during scheduled cleanup:", e);
