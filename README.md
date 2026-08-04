@@ -3,8 +3,8 @@
 A modern, lightning-fast, and fully serverless platform combining the official team presentation (match schedules, results) and a custom-built fanshop.
 
 ## Features
-* **Club Hub:** Match schedules, team results, and general club information.
-* **Fanshop:** Custom e-commerce platform with a shopping cart and order management.
+* **Club Hub:** Match schedules and results.
+* **Fanshop:** Custom platform with a shopping cart and order management.
 * **Admin Dashboard:** Secured via Cloudflare Access (Zero Trust JWT authentication).
 * **Automated Maintenance:** CRON jobs for canceling uncollected orders and purging old database records/audit logs.
 * **Spam Protection:** Cloudflare Turnstile integration on the checkout form.
