@@ -8,8 +8,8 @@
     "awayTeam": "Sokol Bohuňovice",
     "homeLogo": "/logos/prikazy.png",
     "awayLogo": "/Logo_100.svg",
-    "homeScore": null,
-    "awayScore": null
+    "homeScore": 3,
+    "awayScore": 0
   },
   {
     "id": 2,
