@@ -20,8 +20,8 @@
     "awayTeam": "FC Sigma Hodolany",
     "homeLogo": "/Logo_100.svg",
     "awayLogo": "/logos/hodolany.png",
-    "homeScore": null,
-    "awayScore": null
+    "homeScore": 1,
+    "awayScore": 1
   },
   {
     "id": 3,
