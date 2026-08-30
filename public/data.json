@@ -32,8 +32,8 @@
     "awayTeam": "Sokol Bohuňovice",
     "homeLogo": "/logos/sternberk.png",
     "awayLogo": "/Logo_100.svg",
-    "homeScore": null,
-    "awayScore": null
+    "homeScore": 9,
+    "awayScore": 1
   },
   {
     "id": 4,
