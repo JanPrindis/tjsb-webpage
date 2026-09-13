@@ -56,8 +56,8 @@
     "awayTeam": "Sokol Bohuňovice",
     "homeLogo": "/logos/troubelice.png",
     "awayLogo": "/Logo_100.svg",
-    "homeScore": null,
-    "awayScore": null
+    "homeScore": 1,
+    "awayScore": 2
   },
   {
     "id": 6,
