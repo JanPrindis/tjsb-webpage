@@ -68,8 +68,8 @@
     "awayTeam": "FC Lužice",
     "homeLogo": "/Logo_100.svg",
     "awayLogo": "/logos/luzice.png",
-    "homeScore": null,
-    "awayScore": null
+    "homeScore": 1,
+    "awayScore": 1
   },
   {
     "id": 7,
