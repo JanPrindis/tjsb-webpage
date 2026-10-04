@@ -92,8 +92,8 @@
     "awayTeam": "SK PASEKA",
     "homeLogo": "/Logo_100.svg",
     "awayLogo": "/logos/paseka.png",
-    "homeScore": null,
-    "awayScore": null
+    "homeScore": 4,
+    "awayScore": 0
   },
   {
     "id": 9,
