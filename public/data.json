@@ -128,8 +128,8 @@
     "awayTeam": "Sokol Konice",
     "homeLogo": "/Logo_100.svg",
     "awayLogo": "/logos/konice.png",
-    "homeScore": null,
-    "awayScore": null
+    "homeScore": 0,
+    "awayScore": 2
   },
   {
     "id": 12,
