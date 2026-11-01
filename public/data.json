@@ -140,8 +140,8 @@
     "awayTeam": "FK Žulová",
     "homeLogo": "/Logo_100.svg",
     "awayLogo": "/logos/zulova.png",
-    "homeScore": null,
-    "awayScore": null
+    "homeScore": 3,
+    "awayScore": 2
   },
   {
     "id": 13,
