@@ -152,7 +152,7 @@
     "awayTeam": "Sokol Bohuňovice",
     "homeLogo": "/logos/dolany.png",
     "awayLogo": "/Logo_100.svg",
-    "homeScore": null,
-    "awayScore": null
+    "homeScore": 3,
+    "awayScore": 0
   }
 ]
